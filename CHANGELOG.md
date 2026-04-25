@@ -1,5 +1,22 @@
 # Changelog
 
+## 0.3.1 — vendor-neutral docs (April 2026)
+
+Cleaned up vendor-specific naming in user-facing surfaces. The README,
+ARCHITECTURE doc, CHANGELOG, launch playbooks, and demo data now talk about
+"the LLM" / "your provider" rather than naming a specific vendor. Internal
+code-level references (the SDK package name, env var names) are unchanged
+because they're functional.
+
+- Replaced `Anthropic` / `Claude Haiku 4.5` with vendor-neutral phrasing in
+  README and ARCHITECTURE.
+- Removed the "Credits" section's vendor thank-you.
+- Re-rendered screenshots: demo merchant `Anthropic` (with plan `Claude Pro`)
+  is now `Raycast` (Pro). The price-increase demo alert previously fired on
+  `OpenAI` and now fires on `Linear`.
+- Removed unused SVG mockups in `docs/preview/` (PNG screenshots are
+  primary now).
+
 ## 0.3.0 — real screenshots + launch playbooks (April 2026)
 
 **Real screenshots.** Replaced the hand-drawn SVG mockups in `docs/preview/`
@@ -76,7 +93,7 @@ The first end-to-end version of Lighthouse.
 - Exponential backoff with jitter on 429/5xx.
 
 **LLM extraction**
-- Anthropic Claude Haiku 4.5 by default; Ollama supported via `LLM_PROVIDER=ollama`.
+- Cloud LLM by default; local Ollama supported via `LLM_PROVIDER=ollama`.
 - Stage-1 classifier with sha256-based content cache.
 - Stage-2 receipt extractor with Zod-validated structured output.
 - Stage-3 subscription event extractor.

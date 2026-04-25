@@ -58,8 +58,6 @@ export const MERCHANT_RULES: MerchantRule[] = [
     domains: ['github.com'], aliasPatterns: [/^github\b/i] },
   { canonical: 'openai', display: 'OpenAI', category: 'developer',
     domains: ['openai.com'], aliasPatterns: [/openai|chatgpt/i] },
-  { canonical: 'anthropic', display: 'Anthropic', category: 'developer',
-    domains: ['anthropic.com'], aliasPatterns: [/anthropic|claude/i] },
   { canonical: 'figma', display: 'Figma', category: 'developer',
     domains: ['figma.com'], aliasPatterns: [/^figma\b/i] },
   { canonical: 'notion', display: 'Notion', category: 'productivity',

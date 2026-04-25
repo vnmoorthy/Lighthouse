@@ -21,7 +21,7 @@ Below is a paste-ready submission. The "URL" field should point at the GitHub re
 >
 > The data was always in my inbox. Receipts have line items. Subscription emails say "your $19 plan renews on May 14." But that's mostly text, not structure, and I'd been ignoring it because regex extraction is a tar pit.
 >
-> So this is the LLM-extractor version. It runs entirely on your machine: Gmail OAuth (read-only), an Anthropic Haiku call per email to classify and extract, then a SQLite database and a local React dashboard. Total wall time on a 25k-email inbox: ~90 minutes, ~$50 of API credit. Switch to Ollama and the API cost drops to zero.
+> So this is the LLM-extractor version. It runs entirely on your machine: Gmail OAuth (read-only), one structured-extraction LLM call per email to classify and extract, then a SQLite database and a local React dashboard. Total wall time on a 25k-email inbox: ~90 minutes, ~$50 of API credit on a small cloud model. Point it at a local Ollama and the API cost drops to zero.
 >
 > A few things I cared about while building it:
 >

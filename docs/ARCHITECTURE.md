@@ -40,7 +40,7 @@
         └────────────────────────────────────────────────────┘
 ```
 
-`G` = Google APIs, `A` = Anthropic API. Both endpoints are over HTTPS. Everything else lives on disk.
+`G` = Google APIs, `LLM` = whichever LLM provider you've configured. Both endpoints are over HTTPS. Everything else lives on disk.
 
 ## Key decisions
 
@@ -86,7 +86,7 @@ erDiagram
 
 1. **Pop a batch of pending emails.** `getPendingEmails(200)` returns the most recent 200 emails with `processed_status = 'pending'`.
 2. **For each email, dispatch under p-limit:**
-   1. **Classify** — sha256 cache hit? Use it. Otherwise call Claude Haiku with the metadata head and store the result.
+   1. **Classify** — sha256 cache hit? Use it. Otherwise call the LLM with the metadata head and store the result.
    2. **If classification is `not_relevant` or `shipping_notification`:** mark `skipped`, return.
    3. **If classification is `receipt` or `subscription_renewal`:** call the receipt extractor with the full plaintext body (capped at 8KB). Insert a `receipts` row and, for renewals, also call the subscription extractor and upsert the `subscriptions` row + a `subscription_charges` link.
    4. **If classification is a pure subscription event:** call the subscription extractor and upsert the subscription with `status` derived from the `action` field.
@@ -113,7 +113,7 @@ Common failure modes and what we do about them:
 | Schema validation fails | Output is JSON but doesn't match Zod | Mark `error` with field details; logged for prompt improvement |
 | Currency unknown | Non-USD/EUR/GBP without obvious signal | LLM emits `UNK`; dashboard formats with code only |
 | Merchant unknown | Not in rules, LLM normalize fails | Insert raw name as canonical; alias is cached for next time |
-| Multilingual receipts | Especially CJK | Generally OK on Haiku 4.5; quality varies on Ollama |
+| Multilingual receipts | Especially CJK | Frontier cloud LLMs handle this well; smaller local models vary |
 
 ## Performance
 
@@ -122,12 +122,12 @@ Rough numbers from a Mac M2 with a 24-month, 24,000-email inbox:
 | Step | Time |
 | --- | --- |
 | `npm run sync` (Gmail fetch) | ~3 minutes |
-| Pipeline (LLM extraction) | ~6 minutes (Anthropic), ~25 minutes (Ollama 8B local) |
+| Pipeline (LLM extraction) | ~90 min (cloud LLM), ~3-4 hr (local Ollama 8B) |
 | Dedupe + alerts pass | <1 second |
 | API cold start | ~150 ms |
 | Dashboard initial render | ~80 ms |
 
-The pipeline is the long pole. It's network-bound; concurrency 5 is well-tuned to the Anthropic rate limit. Bumping concurrency rarely speeds it up.
+The pipeline is the long pole. It's network-bound; concurrency 5 is a polite default for most LLM provider rate limits. Bumping concurrency rarely speeds it up.
 
 ## What's intentionally not here
 

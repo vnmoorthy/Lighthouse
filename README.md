@@ -5,7 +5,7 @@
 <p align="center">
   <a href="https://github.com/vnmoorthy/Lighthouse/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/vnmoorthy/Lighthouse/ci.yml?branch=main&label=CI&style=flat-square" alt="CI"></a>
   <a href="./LICENSE"><img src="https://img.shields.io/github/license/vnmoorthy/Lighthouse?style=flat-square&color=blue" alt="License"></a>
-  <a href="./CHANGELOG.md"><img src="https://img.shields.io/badge/version-0.3.0-fbbf24?style=flat-square" alt="Version"></a>
+  <a href="./CHANGELOG.md"><img src="https://img.shields.io/badge/version-0.3.1-fbbf24?style=flat-square" alt="Version"></a>
   <a href="https://github.com/vnmoorthy/Lighthouse/stargazers"><img src="https://img.shields.io/github/stars/vnmoorthy/Lighthouse?style=flat-square&color=fbbf24" alt="Stars"></a>
   <a href="https://github.com/vnmoorthy/Lighthouse/issues?q=is%3Aopen+label%3A%22good+first+issue%22"><img src="https://img.shields.io/github/issues/vnmoorthy/Lighthouse/good%20first%20issue?style=flat-square&color=84cc16" alt="Good first issues"></a>
 </p>
@@ -113,7 +113,7 @@ npm run serve   # then open http://localhost:5174
 ```mermaid
 flowchart LR
     G[Gmail API<br/>read-only]
-    LLM[Anthropic API or<br/>local Ollama]
+    LLM[Your LLM<br/>provider]
     DB[(SQLite<br/>~/.lighthouse/lighthouse.db)]
     UI[React dashboard<br/>localhost:5174]
 
@@ -128,12 +128,12 @@ flowchart LR
 
 Four LLM stages, each independently caching:
 
-1. **Classify (Stage 1).** Cheap, single-shot Claude Haiku prompt sees only `(from, subject, snippet, first 500 chars)` and assigns one of nine buckets. Result is hashed and cached, so re-syncing is free.
-2. **Extract (Stage 2 / 3).** Receipts and renewals get the receipt extractor; signup/trial/cancel/price emails get the subscription extractor. Both use Anthropic tool-use to coerce structured JSON, then validate against a Zod schema before writing.
+1. **Classify (Stage 1).** Cheap, single-shot LLM prompt sees only `(from, subject, snippet, first 500 chars)` and assigns one of nine buckets. Result is hashed and cached, so re-syncing is free.
+2. **Extract (Stage 2 / 3).** Receipts and renewals get the receipt extractor; signup/trial/cancel/price emails get the subscription extractor. Both use tool-use / JSON-mode to coerce structured output, then validate against a Zod schema before writing.
 3. **Normalize (Stage 4).** "AMZN Mktp US*1A2B3", "Amazon.com", and "Amazon Marketplace" all collapse into one `Amazon` row. The first 70+ merchants are hand-coded rules ([open a PR to add yours](./CONTRIBUTING.md)). Anything else is normalized by the LLM and cached forever.
 4. **Dedupe and score.** Charges group into subscriptions; status (`active` / `cancelled` / `trial`) is computed from cycle math.
 
-## Cost (Claude Haiku 4.5)
+## Cost
 
 Approximate, on a typical inbox at default settings (no batching). The classifier dominates because every email goes through it; extraction only runs on the ~30% of emails the classifier flagged as relevant.
 
@@ -162,7 +162,7 @@ Re-syncing is essentially free — classifier results are cached on `sha256(from
 
 **What happens to my data?** It lives in `~/.lighthouse/lighthouse.db`. Delete the file and it's gone — no servers, no backups, no "we still have a copy."
 
-**Can I use Ollama instead of Anthropic?** Yes. Set `LLM_PROVIDER=ollama` and pick a model that supports JSON mode (Llama 3.1 8B works fine; Qwen 2.5 14B is better). Quality drops a bit on the harder categories (price changes, trial endings) but day-to-day extraction is solid.
+**Can I run the LLM locally?** Yes. Set `LLM_PROVIDER=ollama` and pick a model that supports JSON mode (Llama 3.1 8B works fine; Qwen 2.5 14B is better). Quality drops a bit on the harder categories (price changes, trial endings) but day-to-day extraction is solid, and you stop paying per email.
 
 **My receipts didn't extract.** Look in `~/.lighthouse/lighthouse.log` for the row id. Re-run with `LIGHTHOUSE_DEBUG=1` to see the model output. If you find a recurring failure mode, please [open an issue](https://github.com/vnmoorthy/Lighthouse/issues/new/choose) with a redacted sample — we improve the prompts, not by adding regex band-aids.
 
@@ -181,7 +181,7 @@ See [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) for the deep dive. In one sen
 | `packages/core/src/db/` | SQLite schema, migrations, query helpers, kv store. |
 | `packages/core/src/crypto/vault.ts` | Argon2id key derivation, AES-256-GCM blob encryption. |
 | `packages/core/src/gmail/` | OAuth desktop flow, MIME parser, incremental fetch loop. |
-| `packages/core/src/llm/` | Anthropic + Ollama client, classifier, receipt + subscription extractors. |
+| `packages/core/src/llm/` | Provider-agnostic LLM client, classifier, receipt + subscription extractors. |
 | `packages/core/src/domain/` | Merchant rules, normalization, dedupe, alerts engine. |
 | `packages/core/src/pipeline/` | Concurrency-bounded orchestrator that walks pending emails. |
 | `packages/core/src/api/` | Fastify routes consumed by the SPA. |
@@ -238,7 +238,6 @@ npm run lint                      # eslint
 
 ## Credits
 
-- Receipt classification and extraction is powered by [Anthropic Claude](https://www.anthropic.com/).
 - The dashboard's information density borrows from [Linear](https://linear.app/) and [Things](https://culturedcode.com/things/).
 - The whole project owes a debt to people who keep insisting that personal data should live on personal computers.
 

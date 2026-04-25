@@ -1,8 +1,8 @@
 /**
  * LLM client abstraction.
  *
- * Two providers:
- *   - Anthropic (default): uses tool-use to coerce structured JSON output.
+ * Two providers wired up:
+ *   - Cloud (default): uses tool-use to coerce structured JSON output.
  *   - Ollama (local): uses the `format: "json"` option and prompts the model
  *     to return JSON in the system instruction. We then parse + Zod-validate.
  *

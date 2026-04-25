@@ -43,7 +43,7 @@ open http://localhost:5174
 | 1 | 0:00–0:05 | Terminal: `git clone … && npm install && npm run seed:demo && npm run serve` | Establish: this is one command |
 | 2 | 0:05–0:10 | Browser navigates to `localhost:5174` | The dashboard loads. Recharts animation plays. |
 | 3 | 0:10–0:18 | Cursor traces across the four KPI cards | Show: $1,247.83 last 30 days, 11 active subs, $312.46/mo, 3 alerts |
-| 4 | 0:18–0:28 | Click "Subscriptions" in the sidebar | Sortable table appears. Click Anthropic row. |
+| 4 | 0:18–0:28 | Click "Subscriptions" in the sidebar | Sortable table appears. Click any row to open the drawer. |
 | 5 | 0:28–0:38 | Drawer opens with charge history + "show me the email" view | The proof email renders inline. |
 | 6 | 0:38–0:46 | Click "Receipts" | Searchable table. Type "Amazon" in the filter box, results shrink. |
 | 7 | 0:46–0:54 | Click "Alerts" | Three alert cards. Hover the trial-ending one. |

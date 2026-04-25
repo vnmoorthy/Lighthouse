@@ -49,7 +49,7 @@
     <g transform="translate(-100, 0)">
       <rect x="-90" y="-16" width="180" height="32" rx="16" fill="#131a26" stroke="#1f2937"/>
       <circle cx="-66" cy="0" r="3" fill="#fbbf24"/>
-      <text x="-50" y="4" fill="#e7eef8" font-size="13">Claude Haiku 4.5</text>
+      <text x="-50" y="4" fill="#e7eef8" font-size="13">LLM extraction</text>
     </g>
     <g transform="translate(100, 0)">
       <rect x="-90" y="-16" width="180" height="32" rx="16" fill="#131a26" stroke="#1f2937"/>

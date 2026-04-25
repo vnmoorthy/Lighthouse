@@ -45,14 +45,14 @@ Post sequentially. Each ≤ 280 chars. Attach **the overview screenshot** to twe
 >
 > • SQLite + better-sqlite3
 > • Argon2id-encrypted Gmail token
-> • Claude Haiku 4.5 for extraction (or local Ollama)
+> • Cloud LLM for extraction (or local Ollama)
 > • Fastify + React + Tailwind dashboard on localhost
 >
 > No cloud, no servers, no telemetry.
 
 > **Tweet 5** (reply, attach alerts.png)
 >
-> Cost on a typical 25k-email inbox: ~$50 in Anthropic credit, one time. Re-syncing is essentially free thanks to a content-hash classifier cache.
+> Cost on a typical 25k-email inbox: ~$50 in cloud-LLM credit, one time. Re-syncing is essentially free thanks to a content-hash classifier cache.
 >
 > Or run Ollama locally and pay $0.
 
@@ -100,7 +100,7 @@ Post each as its own tweet (not a thread). Drop them across one day.
 
 **Do:**
 - Post the first tweet with a screenshot attached. Image-attached tweets get ~3× the engagement.
-- @-mention people whose work this builds on, but only sincerely (e.g., the Anthropic SDK team).
+- @-mention any tools or libraries you genuinely depended on, but only sincerely.
 - Reply to your own thread with the GitHub URL again 12 hours in — it boosts reach to a fresh timezone.
 - Pin the launch tweet for at least a week.
 

@@ -39,8 +39,8 @@ const MERCHANTS: FakeMerchant[] = [
   { canonical: 'nytimes', display: 'The New York Times', domain: 'nytimes.com', category: 'news', amount: 1700 },
   { canonical: 'starbucks', display: 'Starbucks', domain: 'starbucks.com', category: 'food', amount: 642 },
   { canonical: 'airbnb', display: 'Airbnb', domain: 'airbnb.com', category: 'travel', amount: 18900 },
-  { canonical: 'openai', display: 'OpenAI', domain: 'openai.com', category: 'developer', amount: 2000 },
-  { canonical: 'anthropic', display: 'Anthropic', domain: 'anthropic.com', category: 'developer', amount: 2000 },
+  { canonical: 'linear', display: 'Linear', domain: 'linear.app', category: 'productivity', amount: 800 },
+  { canonical: 'raycast', display: 'Raycast', domain: 'raycast.com', category: 'productivity', amount: 800 },
   { canonical: 'peloton', display: 'Peloton', domain: 'onepeloton.com', category: 'fitness', amount: 4400 },
   { canonical: 'classpass', display: 'ClassPass', domain: 'classpass.com', category: 'fitness', amount: 7900 },
 ];
@@ -61,8 +61,8 @@ const SUBSCRIPTIONS: SubscriptionDef[] = [
   { merchant: 'figma', plan: 'Professional', amount: 1500, cycle: 'monthly' },
   { merchant: 'notion', plan: 'Plus', amount: 1000, cycle: 'monthly' },
   { merchant: 'nytimes', plan: 'All Access', amount: 1700, cycle: 'monthly' },
-  { merchant: 'openai', plan: 'ChatGPT Plus', amount: 2000, cycle: 'monthly' },
-  { merchant: 'anthropic', plan: 'Claude Pro', amount: 2000, cycle: 'monthly', trial: true },
+  { merchant: 'linear', plan: 'Standard', amount: 800, cycle: 'monthly' },
+  { merchant: 'raycast', plan: 'Pro', amount: 800, cycle: 'monthly', trial: true },
   { merchant: 'peloton', plan: 'All-Access Membership', amount: 4400, cycle: 'monthly' },
   { merchant: 'classpass', plan: '8 Credits', amount: 7900, cycle: 'monthly' },
 ];
@@ -182,7 +182,9 @@ export async function seedDemo(): Promise<void> {
       ).run(s.trial ? 'trial_started' : 'subscription_renewal', now, emailId);
 
       // Add a "price increase" hiccup for OpenAI to demo alerts.
-      const amount = s.merchant === 'openai' && i === 0 ? Math.round(s.amount * 1.1) : s.amount;
+      // Bump one merchant's latest charge so the price-increase alert has
+      // something to fire on in the demo.
+      const amount = s.merchant === 'linear' && i === 0 ? Math.round(s.amount * 1.1) : s.amount;
 
       if (!s.trial) {
         const receiptId = insertReceipt({

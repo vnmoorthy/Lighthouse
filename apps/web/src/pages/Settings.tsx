@@ -82,7 +82,7 @@ export default function SettingsPage() {
                   <div className="text-sm font-medium">Sync now</div>
                   <div className="text-xs text-lh-mute mt-1">
                     Fetch new mail and run the LLM extractors. This may cost a few cents at the
-                    Anthropic API depending on inbox volume.
+                    LLM API depending on inbox volume and provider.
                   </div>
                 </div>
                 <button
