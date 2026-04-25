@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 800" font-family="Inter, system-ui, sans-serif">
+  <rect width="1280" height="800" fill="#0b0f17"/>
+
+  <!-- sidebar -->
+  <rect x="0" y="0" width="224" height="800" fill="#0f1623"/>
+  <rect x="223" y="0" width="1" height="800" fill="#1f2937" opacity="0.6"/>
+  <circle cx="36" cy="36" r="14" fill="#fbbf24"/><circle cx="36" cy="36" r="5" fill="#0b0f17"/>
+  <text x="60" y="34" fill="#e7eef8" font-size="16" font-weight="600">Lighthouse</text>
+  <g font-size="13">
+    <text x="56" y="106" fill="#94a3b8">Overview</text>
+    <text x="56" y="138" fill="#94a3b8">Subscriptions</text>
+    <text x="56" y="170" fill="#94a3b8">Receipts</text>
+    <rect x="12" y="180" width="200" height="36" rx="8" fill="#243044"/>
+    <text x="56" y="202" fill="#e7eef8">Alerts</text>
+    <rect x="180" y="190" width="22" height="18" rx="9" fill="#fda4af" opacity="0.2"/>
+    <text x="186" y="203" fill="#fda4af" font-size="11" font-weight="600">3</text>
+    <text x="56" y="234" fill="#94a3b8">Settings</text>
+  </g>
+
+  <!-- header -->
+  <text x="256" y="50" fill="#e7eef8" font-size="22" font-weight="600">Alerts</text>
+  <text x="256" y="74" fill="#94a3b8" font-size="13">Trial endings, price changes, duplicate charges. Things you'd otherwise miss.</text>
+  <line x1="256" y1="100" x2="1248" y2="100" stroke="#1f2937" opacity="0.4"/>
+
+  <!-- alert: trial ending -->
+  <g>
+    <rect x="256" y="124" width="992" height="84" rx="16" fill="#131a26" stroke="#fbbf24" stroke-opacity="0.3"/>
+    <circle cx="284" cy="148" r="6" fill="#fbbf24" fill-opacity="0.2"/>
+    <circle cx="284" cy="148" r="3" fill="#fbbf24"/>
+    <text x="306" y="146" fill="#94a3b8" font-size="11" letter-spacing="1.2">TRIAL ENDING</text>
+    <text x="424" y="146" fill="#94a3b8" font-size="11" font-style="italic">2 hours ago</text>
+    <text x="306" y="172" fill="#e7eef8" font-size="14">Anthropic trial ends in 5 days (then $20.00 / monthly).</text>
+    <text x="306" y="192" fill="#94a3b8" font-size="12">Plan: Claude Pro · trial_end_date: May 02, 2026</text>
+    <text x="1232" y="148" fill="#94a3b8" font-size="14" text-anchor="end">×</text>
+  </g>
+
+  <!-- alert: price increase -->
+  <g>
+    <rect x="256" y="228" width="992" height="84" rx="16" fill="#131a26" stroke="#fda4af" stroke-opacity="0.3"/>
+    <circle cx="284" cy="252" r="6" fill="#fda4af" fill-opacity="0.2"/>
+    <path d="M280 257 L284 248 L288 257 Z" fill="#fda4af"/>
+    <text x="306" y="250" fill="#94a3b8" font-size="11" letter-spacing="1.2">PRICE CHANGE</text>
+    <text x="424" y="250" fill="#94a3b8" font-size="11" font-style="italic">6 hours ago</text>
+    <text x="306" y="276" fill="#e7eef8" font-size="14">OpenAI price increase: $20.00 → $22.00.</text>
+    <text x="306" y="296" fill="#94a3b8" font-size="12">Plan: ChatGPT Plus · observed Apr 11, 2026 · 10% increase</text>
+    <text x="1232" y="252" fill="#94a3b8" font-size="14" text-anchor="end">×</text>
+  </g>
+
+  <!-- alert: new subscription -->
+  <g>
+    <rect x="256" y="332" width="992" height="84" rx="16" fill="#131a26" stroke="#34d399" stroke-opacity="0.3"/>
+    <circle cx="284" cy="356" r="6" fill="#34d399" fill-opacity="0.2"/>
+    <path d="M280 356 L288 356 M284 352 L284 360" stroke="#34d399" stroke-width="2"/>
+    <text x="306" y="354" fill="#94a3b8" font-size="11" letter-spacing="1.2">NEW SUBSCRIPTION</text>
+    <text x="436" y="354" fill="#94a3b8" font-size="11" font-style="italic">yesterday</text>
+    <text x="306" y="380" fill="#e7eef8" font-size="14">New subscription detected: ClassPass · $79.00 / monthly.</text>
+    <text x="306" y="400" fill="#94a3b8" font-size="12">First charge attached from Apr 02, 2026 · plan "8 Credits"</text>
+    <text x="1232" y="356" fill="#94a3b8" font-size="14" text-anchor="end">×</text>
+  </g>
+
+  <!-- empty state hint -->
+  <g>
+    <rect x="256" y="436" width="992" height="80" rx="16" fill="#131a26" stroke="#1f2937" stroke-dasharray="3,3"/>
+    <text x="752" y="468" fill="#94a3b8" font-size="13" text-anchor="middle">All other alerts have been dismissed in the last 30 days.</text>
+    <text x="752" y="490" fill="#94a3b8" font-size="11" text-anchor="middle">The next sync will surface any fresh trial endings, price changes, or duplicates.</text>
+  </g>
+
+  <!-- footer breakdown -->
+  <g>
+    <text x="266" y="568" fill="#e7eef8" font-size="13" font-weight="500">Alerts Lighthouse watches for, automatically</text>
+    <rect x="256" y="584" width="488" height="80" rx="12" fill="#131a26" stroke="#1f2937"/>
+    <circle cx="280" cy="608" r="4" fill="#fbbf24"/>
+    <text x="296" y="612" fill="#e7eef8" font-size="13" font-weight="500">Trial ending</text>
+    <text x="296" y="632" fill="#94a3b8" font-size="11">A trial converting to paid in the next 7 days.</text>
+    <text x="296" y="650" fill="#94a3b8" font-size="11">Source: subscription's trial_end_date.</text>
+
+    <rect x="760" y="584" width="488" height="80" rx="12" fill="#131a26" stroke="#1f2937"/>
+    <circle cx="784" cy="608" r="4" fill="#fda4af"/>
+    <text x="800" y="612" fill="#e7eef8" font-size="13" font-weight="500">Price change</text>
+    <text x="800" y="632" fill="#94a3b8" font-size="11">Latest charge differs from prior 3 by &gt;5%.</text>
+    <text x="800" y="650" fill="#94a3b8" font-size="11">Catches both increases and quiet decreases.</text>
+
+    <rect x="256" y="676" width="488" height="80" rx="12" fill="#131a26" stroke="#1f2937"/>
+    <circle cx="280" cy="700" r="4" fill="#34d399"/>
+    <text x="296" y="704" fill="#e7eef8" font-size="13" font-weight="500">New subscription</text>
+    <text x="296" y="724" fill="#94a3b8" font-size="11">A new subscription appeared since the last sync.</text>
+    <text x="296" y="742" fill="#94a3b8" font-size="11">Helps catch shadow trials that quietly converted.</text>
+
+    <rect x="760" y="676" width="488" height="80" rx="12" fill="#131a26" stroke="#1f2937"/>
+    <circle cx="784" cy="700" r="4" fill="#c4b5fd"/>
+    <text x="800" y="704" fill="#e7eef8" font-size="13" font-weight="500">Duplicate charge</text>
+    <text x="800" y="724" fill="#94a3b8" font-size="11">Two charges from the same merchant within 24h.</text>
+    <text x="800" y="742" fill="#94a3b8" font-size="11">Reviewed against ±5% amount tolerance.</text>
+  </g>
+</svg>

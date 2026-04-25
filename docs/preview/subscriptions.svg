@@ -1,0 +1,184 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 800" font-family="Inter, system-ui, sans-serif">
+  <rect width="1280" height="800" fill="#0b0f17"/>
+
+  <!-- sidebar (compact) -->
+  <rect x="0" y="0" width="224" height="800" fill="#0f1623"/>
+  <rect x="223" y="0" width="1" height="800" fill="#1f2937" opacity="0.6"/>
+  <circle cx="36" cy="36" r="14" fill="#fbbf24"/><circle cx="36" cy="36" r="5" fill="#0b0f17"/>
+  <text x="60" y="34" fill="#e7eef8" font-size="16" font-weight="600">Lighthouse</text>
+  <g font-size="13">
+    <text x="56" y="106" fill="#94a3b8">Overview</text>
+    <rect x="12" y="116" width="200" height="36" rx="8" fill="#243044"/>
+    <text x="56" y="138" fill="#e7eef8">Subscriptions</text>
+    <text x="56" y="170" fill="#94a3b8">Receipts</text>
+    <text x="56" y="202" fill="#94a3b8">Alerts</text>
+    <rect x="180" y="190" width="22" height="18" rx="9" fill="#fda4af" opacity="0.2"/>
+    <text x="186" y="203" fill="#fda4af" font-size="11" font-weight="600">3</text>
+    <text x="56" y="234" fill="#94a3b8">Settings</text>
+  </g>
+
+  <!-- header + tabs -->
+  <text x="256" y="50" fill="#e7eef8" font-size="22" font-weight="600">Subscriptions</text>
+  <text x="256" y="74" fill="#94a3b8" font-size="13">Recurring charges Lighthouse identified from your inbox. $312.46 / month at current cycle.</text>
+  <!-- tabs -->
+  <g>
+    <rect x="912" y="36" width="336" height="36" rx="10" fill="#0f1623" stroke="#1f2937"/>
+    <rect x="918" y="42" width="60" height="24" rx="6" fill="transparent"/>
+    <text x="948" y="58" fill="#94a3b8" font-size="11" text-anchor="middle">All</text>
+    <rect x="980" y="42" width="68" height="24" rx="6" fill="#243044"/>
+    <text x="1014" y="58" fill="#e7eef8" font-size="11" text-anchor="middle">Active</text>
+    <text x="1078" y="58" fill="#94a3b8" font-size="11" text-anchor="middle">Trial</text>
+    <text x="1180" y="58" fill="#94a3b8" font-size="11" text-anchor="middle">Cancelled</text>
+  </g>
+  <line x1="256" y1="100" x2="1248" y2="100" stroke="#1f2937" opacity="0.4"/>
+
+  <!-- table -->
+  <g>
+    <rect x="256" y="124" width="992" height="640" rx="16" fill="#131a26" stroke="#1f2937"/>
+    <!-- header row -->
+    <rect x="256" y="124" width="992" height="44" rx="0" fill="#0f1623" opacity="0.5"/>
+    <line x1="256" y1="168" x2="1248" y2="168" stroke="#1f2937"/>
+    <g font-size="10" letter-spacing="1.2" fill="#94a3b8">
+      <text x="284" y="152">MERCHANT</text>
+      <text x="464" y="152">PLAN</text>
+      <text x="688" y="152" text-anchor="end">AMOUNT</text>
+      <text x="720" y="152">CYCLE</text>
+      <text x="900" y="152" text-anchor="end">PER MONTH</text>
+      <text x="940" y="152">NEXT RENEWAL</text>
+      <text x="1088" y="152">STATUS</text>
+    </g>
+
+    <!-- rows -->
+    <g font-size="13">
+      <!-- Netflix -->
+      <line x1="256" y1="208" x2="1248" y2="208" stroke="#1f2937" opacity="0.4"/>
+      <rect x="276" y="180" width="22" height="22" rx="4" fill="#22d3ee" opacity="0.2"/>
+      <text x="287" y="196" fill="#67e8f9" font-size="11" font-weight="600" text-anchor="middle">NE</text>
+      <text x="308" y="196" fill="#e7eef8" font-weight="500">Netflix</text>
+      <text x="464" y="196" fill="#94a3b8">Premium</text>
+      <text x="688" y="196" fill="#e7eef8" text-anchor="end">$22.99</text>
+      <text x="720" y="196" fill="#94a3b8">Monthly</text>
+      <text x="900" y="196" fill="#e7eef8" text-anchor="end">$22.99</text>
+      <text x="940" y="196" fill="#94a3b8">May 14, 2026</text>
+      <rect x="1088" y="184" width="56" height="20" rx="10" fill="#10b981" opacity="0.1" stroke="#10b981" stroke-opacity="0.3"/>
+      <text x="1116" y="197" fill="#34d399" font-size="11" text-anchor="middle">active</text>
+
+      <!-- ClassPass -->
+      <line x1="256" y1="252" x2="1248" y2="252" stroke="#1f2937" opacity="0.4"/>
+      <rect x="276" y="224" width="22" height="22" rx="4" fill="#f9a8d4" opacity="0.2"/>
+      <text x="287" y="240" fill="#fbcfe8" font-size="11" font-weight="600" text-anchor="middle">CL</text>
+      <text x="308" y="240" fill="#e7eef8" font-weight="500">ClassPass</text>
+      <text x="464" y="240" fill="#94a3b8">8 Credits</text>
+      <text x="688" y="240" fill="#e7eef8" text-anchor="end">$79.00</text>
+      <text x="720" y="240" fill="#94a3b8">Monthly</text>
+      <text x="900" y="240" fill="#e7eef8" text-anchor="end">$79.00</text>
+      <text x="940" y="240" fill="#94a3b8">May 02, 2026</text>
+      <rect x="1088" y="228" width="56" height="20" rx="10" fill="#10b981" opacity="0.1" stroke="#10b981" stroke-opacity="0.3"/>
+      <text x="1116" y="241" fill="#34d399" font-size="11" text-anchor="middle">active</text>
+
+      <!-- Peloton -->
+      <line x1="256" y1="296" x2="1248" y2="296" stroke="#1f2937" opacity="0.4"/>
+      <rect x="276" y="268" width="22" height="22" rx="4" fill="#fb923c" opacity="0.2"/>
+      <text x="287" y="284" fill="#fdba74" font-size="11" font-weight="600" text-anchor="middle">PE</text>
+      <text x="308" y="284" fill="#e7eef8" font-weight="500">Peloton</text>
+      <text x="464" y="284" fill="#94a3b8">All-Access Membership</text>
+      <text x="688" y="284" fill="#e7eef8" text-anchor="end">$44.00</text>
+      <text x="720" y="284" fill="#94a3b8">Monthly</text>
+      <text x="900" y="284" fill="#e7eef8" text-anchor="end">$44.00</text>
+      <text x="940" y="284" fill="#94a3b8">May 18, 2026</text>
+      <rect x="1088" y="272" width="56" height="20" rx="10" fill="#10b981" opacity="0.1" stroke="#10b981" stroke-opacity="0.3"/>
+      <text x="1116" y="285" fill="#34d399" font-size="11" text-anchor="middle">active</text>
+
+      <!-- Anthropic (trial) -->
+      <line x1="256" y1="340" x2="1248" y2="340" stroke="#1f2937" opacity="0.4"/>
+      <rect x="276" y="312" width="22" height="22" rx="4" fill="#a78bfa" opacity="0.2"/>
+      <text x="287" y="328" fill="#c4b5fd" font-size="11" font-weight="600" text-anchor="middle">AN</text>
+      <text x="308" y="328" fill="#e7eef8" font-weight="500">Anthropic</text>
+      <text x="464" y="328" fill="#94a3b8">Claude Pro</text>
+      <text x="688" y="328" fill="#e7eef8" text-anchor="end">$20.00</text>
+      <text x="720" y="328" fill="#94a3b8">Monthly</text>
+      <text x="900" y="328" fill="#e7eef8" text-anchor="end">$20.00</text>
+      <text x="940" y="328" fill="#94a3b8">May 02, 2026</text>
+      <rect x="1088" y="316" width="56" height="20" rx="10" fill="#fbbf24" opacity="0.1" stroke="#fbbf24" stroke-opacity="0.3"/>
+      <text x="1116" y="329" fill="#fbbf24" font-size="11" text-anchor="middle">trial</text>
+
+      <!-- OpenAI -->
+      <line x1="256" y1="384" x2="1248" y2="384" stroke="#1f2937" opacity="0.4"/>
+      <rect x="276" y="356" width="22" height="22" rx="4" fill="#34d399" opacity="0.2"/>
+      <text x="287" y="372" fill="#6ee7b7" font-size="11" font-weight="600" text-anchor="middle">OP</text>
+      <text x="308" y="372" fill="#e7eef8" font-weight="500">OpenAI</text>
+      <text x="464" y="372" fill="#94a3b8">ChatGPT Plus</text>
+      <text x="688" y="372" fill="#e7eef8" text-anchor="end">$22.00</text>
+      <text x="720" y="372" fill="#94a3b8">Monthly</text>
+      <text x="900" y="372" fill="#e7eef8" text-anchor="end">$22.00</text>
+      <text x="940" y="372" fill="#94a3b8">May 11, 2026</text>
+      <rect x="1088" y="360" width="56" height="20" rx="10" fill="#10b981" opacity="0.1" stroke="#10b981" stroke-opacity="0.3"/>
+      <text x="1116" y="373" fill="#34d399" font-size="11" text-anchor="middle">active</text>
+
+      <!-- GitHub -->
+      <line x1="256" y1="428" x2="1248" y2="428" stroke="#1f2937" opacity="0.4"/>
+      <rect x="276" y="400" width="22" height="22" rx="4" fill="#94a3b8" opacity="0.2"/>
+      <text x="287" y="416" fill="#cbd5e1" font-size="11" font-weight="600" text-anchor="middle">GI</text>
+      <text x="308" y="416" fill="#e7eef8" font-weight="500">GitHub</text>
+      <text x="464" y="416" fill="#94a3b8">Pro</text>
+      <text x="688" y="416" fill="#e7eef8" text-anchor="end">$21.00</text>
+      <text x="720" y="416" fill="#94a3b8">Monthly</text>
+      <text x="900" y="416" fill="#e7eef8" text-anchor="end">$21.00</text>
+      <text x="940" y="416" fill="#94a3b8">May 09, 2026</text>
+      <rect x="1088" y="404" width="56" height="20" rx="10" fill="#10b981" opacity="0.1" stroke="#10b981" stroke-opacity="0.3"/>
+      <text x="1116" y="417" fill="#34d399" font-size="11" text-anchor="middle">active</text>
+
+      <!-- NYTimes -->
+      <line x1="256" y1="472" x2="1248" y2="472" stroke="#1f2937" opacity="0.4"/>
+      <rect x="276" y="444" width="22" height="22" rx="4" fill="#67e8f9" opacity="0.2"/>
+      <text x="287" y="460" fill="#a5f3fc" font-size="11" font-weight="600" text-anchor="middle">TH</text>
+      <text x="308" y="460" fill="#e7eef8" font-weight="500">The New York Times</text>
+      <text x="464" y="460" fill="#94a3b8">All Access</text>
+      <text x="688" y="460" fill="#e7eef8" text-anchor="end">$17.00</text>
+      <text x="720" y="460" fill="#94a3b8">Monthly</text>
+      <text x="900" y="460" fill="#e7eef8" text-anchor="end">$17.00</text>
+      <text x="940" y="460" fill="#94a3b8">May 21, 2026</text>
+      <rect x="1088" y="448" width="56" height="20" rx="10" fill="#10b981" opacity="0.1" stroke="#10b981" stroke-opacity="0.3"/>
+      <text x="1116" y="461" fill="#34d399" font-size="11" text-anchor="middle">active</text>
+
+      <!-- Spotify -->
+      <line x1="256" y1="516" x2="1248" y2="516" stroke="#1f2937" opacity="0.4"/>
+      <rect x="276" y="488" width="22" height="22" rx="4" fill="#34d399" opacity="0.2"/>
+      <text x="287" y="504" fill="#6ee7b7" font-size="11" font-weight="600" text-anchor="middle">SP</text>
+      <text x="308" y="504" fill="#e7eef8" font-weight="500">Spotify</text>
+      <text x="464" y="504" fill="#94a3b8">Family</text>
+      <text x="688" y="504" fill="#e7eef8" text-anchor="end">$16.99</text>
+      <text x="720" y="504" fill="#94a3b8">Monthly</text>
+      <text x="900" y="504" fill="#e7eef8" text-anchor="end">$16.99</text>
+      <text x="940" y="504" fill="#94a3b8">May 06, 2026</text>
+      <rect x="1088" y="492" width="56" height="20" rx="10" fill="#10b981" opacity="0.1" stroke="#10b981" stroke-opacity="0.3"/>
+      <text x="1116" y="505" fill="#34d399" font-size="11" text-anchor="middle">active</text>
+
+      <!-- Notion -->
+      <line x1="256" y1="560" x2="1248" y2="560" stroke="#1f2937" opacity="0.4"/>
+      <rect x="276" y="532" width="22" height="22" rx="4" fill="#a78bfa" opacity="0.2"/>
+      <text x="287" y="548" fill="#c4b5fd" font-size="11" font-weight="600" text-anchor="middle">NO</text>
+      <text x="308" y="548" fill="#e7eef8" font-weight="500">Notion</text>
+      <text x="464" y="548" fill="#94a3b8">Plus</text>
+      <text x="688" y="548" fill="#e7eef8" text-anchor="end">$10.00</text>
+      <text x="720" y="548" fill="#94a3b8">Monthly</text>
+      <text x="900" y="548" fill="#e7eef8" text-anchor="end">$10.00</text>
+      <text x="940" y="548" fill="#94a3b8">May 16, 2026</text>
+      <rect x="1088" y="536" width="56" height="20" rx="10" fill="#10b981" opacity="0.1" stroke="#10b981" stroke-opacity="0.3"/>
+      <text x="1116" y="549" fill="#34d399" font-size="11" text-anchor="middle">active</text>
+
+      <!-- Apple -->
+      <line x1="256" y1="604" x2="1248" y2="604" stroke="#1f2937" opacity="0.4"/>
+      <rect x="276" y="576" width="22" height="22" rx="4" fill="#f9a8d4" opacity="0.2"/>
+      <text x="287" y="592" fill="#fbcfe8" font-size="11" font-weight="600" text-anchor="middle">AP</text>
+      <text x="308" y="592" fill="#e7eef8" font-weight="500">Apple</text>
+      <text x="464" y="592" fill="#94a3b8">iCloud+ 200GB</text>
+      <text x="688" y="592" fill="#e7eef8" text-anchor="end">$2.99</text>
+      <text x="720" y="592" fill="#94a3b8">Monthly</text>
+      <text x="900" y="592" fill="#e7eef8" text-anchor="end">$2.99</text>
+      <text x="940" y="592" fill="#94a3b8">May 04, 2026</text>
+      <rect x="1088" y="580" width="56" height="20" rx="10" fill="#10b981" opacity="0.1" stroke="#10b981" stroke-opacity="0.3"/>
+      <text x="1116" y="593" fill="#34d399" font-size="11" text-anchor="middle">active</text>
+    </g>
+  </g>
+</svg>

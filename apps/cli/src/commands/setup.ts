@@ -67,7 +67,9 @@ export async function setupCommand(opts: SetupOpts): Promise<void> {
     return;
   }
 
-  // 1. Vault.
+  // 1. Vault. Keep the unlocked vault around; we need it again for OAuth in
+  // step 3 — no reason to ask the user twice in the same run.
+  let vault: ReturnType<typeof initializeVault>;
   if (!isVaultInitialized()) {
     console.log(chalk.gray('\nStep 1/3: choose a passphrase.'));
     console.log(
@@ -77,12 +79,12 @@ export async function setupCommand(opts: SetupOpts): Promise<void> {
     const a = await askPassphrase('  Choose passphrase: ');
     const b = await askPassphrase('  Repeat passphrase: ');
     if (a !== b) throw new Error('Passphrases do not match.');
-    initializeVault(a);
+    vault = initializeVault(a);
     console.log(chalk.green('  ✓ Vault initialized.'));
   } else {
     console.log(chalk.gray('\nStep 1/3: vault already initialized — verifying passphrase.'));
     const p = await askPassphrase('  Enter passphrase: ');
-    unlockVault(p); // throws on wrong
+    vault = unlockVault(p); // throws on wrong
     console.log(chalk.green('  ✓ Passphrase verified.'));
   }
 
@@ -112,8 +114,6 @@ export async function setupCommand(opts: SetupOpts): Promise<void> {
     );
     return;
   }
-  const passForGmail = await askPassphrase('  Enter passphrase to authorize Gmail: ');
-  const vault = unlockVault(passForGmail);
   await runOAuthFlow(vault);
   kvSet(KV_KEYS.setupCompletedAt, String(Date.now()));
 

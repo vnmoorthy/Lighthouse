@@ -95,19 +95,23 @@ export function dedupeAndScoreSubscriptions(): DedupeStats {
 
     // 3. Status.
     let newStatus: SubscriptionRow['status'] = sub.status;
-    const cancelledRecently = db
-      .prepare(
-        `SELECT 1 FROM emails
-         WHERE classification = 'subscription_cancellation'
-         AND from_address LIKE ?
-         AND internal_date > ?`,
-      )
-      .get(
-        '%' + (db
-          .prepare('SELECT domain FROM merchants WHERE id = ?')
-          .get(sub.merchant_id) as { domain: string | null } | undefined)?.domain + '%',
-        charges.length > 0 ? charges[0]!.charge_date : 0,
-      );
+    const merchantRow = db
+      .prepare('SELECT domain FROM merchants WHERE id = ?')
+      .get(sub.merchant_id) as { domain: string | null } | undefined;
+    const since = charges.length > 0 ? charges[0]!.charge_date : 0;
+    // Only run the cancellation lookup when we have a domain to match on —
+    // otherwise the LIKE pattern would fall back to '%null%' and silently
+    // mark random subs as cancelled.
+    const cancelledRecently = merchantRow?.domain
+      ? db
+          .prepare(
+            `SELECT 1 FROM emails
+             WHERE classification = 'subscription_cancellation'
+             AND from_address LIKE ?
+             AND internal_date > ?`,
+          )
+          .get('%' + merchantRow.domain + '%', since)
+      : null;
 
     if (cancelledRecently) {
       newStatus = 'cancelled';

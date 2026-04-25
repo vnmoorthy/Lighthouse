@@ -1,5 +1,42 @@
 # Changelog
 
+## 0.2.0 — bruteforce review pass (April 2026)
+
+A self-imposed audit + polish pass: read every file with fresh eyes, ran the
+schema against real SQLite, fixed every issue found, and added marketing-grade
+visuals.
+
+**Bug fixes**
+- `dedupe.ts`: when a merchant had no domain, the cancellation lookup built a
+  `LIKE '%null%'` pattern and could silently mark random subscriptions as
+  cancelled. Now skipped when domain is unknown.
+- `alerts.ts`: the duplicate-charge check was an unbounded N² self-join across
+  the full receipts table. Capped at the last 90 days and added a date-range
+  predicate to prune the join.
+- `setup.ts`: the interactive setup prompted for the passphrase twice in the
+  same run (once to verify, once to authorize Gmail). Now reuses the unlocked
+  vault from step 1.
+- `dev.ts`: silently hung when `LIGHTHOUSE_PASSPHRASE` was unset because tsx
+  watch-restarts can't answer interactive prompts. Now exits with a clear hint.
+- `vault.ts`: tightened parameter types in the rekey helper (TS strict mode
+  caught implicit `any`).
+- `tailwind.config.js`: content paths were resolved relative to whichever cwd
+  Vite happened to launch from, occasionally producing a half-utility-set CSS.
+  Switched to absolute paths via `import.meta.url`.
+
+**README and visuals**
+- Added a hero banner SVG, four faithful page-preview SVGs (overview,
+  subscriptions, receipts, alerts), and shields.io badges for CI, license,
+  version, stars, and "good first issue" count.
+- Re-wrote cost and time estimates honestly (the v0.1 README was off by ~50×).
+- Re-organized the README to lead with visuals and a "Why" pitch, then cost,
+  then privacy.
+
+**SQL contract tests**
+- Added a Node-22 `node:sqlite` based validation that the schema applies, all
+  ON CONFLICT clauses behave as advertised, and the partial unique index on
+  `subscription_charges(receipt_id)` permits NULL duplicates.
+
 ## 0.1.0 — initial release
 
 The first end-to-end version of Lighthouse.

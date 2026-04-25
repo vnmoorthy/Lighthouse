@@ -122,18 +122,26 @@ export function runAlertsPass(): AlertStats {
   }
 
   // --- Duplicate charge: 2 receipts same merchant in 24h, within 5% ------
+  // We only check the last 90 days of receipts to keep this from becoming
+  // an N² blow-up across full history. Real duplicate charges are caught
+  // within hours of happening; the 90-day window is generous.
+  const dupWindowStart = now - 90 * DAY;
   const dupCandidates = getDb()
     .prepare(
       `SELECT r1.id as id1, r2.id as id2, r1.merchant_id, r1.total_amount_cents as a1,
               r2.total_amount_cents as a2, r1.transaction_date as t1, r2.transaction_date as t2,
               m.display_name as merchant_display_name, r1.currency
        FROM receipts r1
-       JOIN receipts r2 ON r1.merchant_id = r2.merchant_id AND r2.id > r1.id
+       JOIN receipts r2
+         ON r1.merchant_id = r2.merchant_id
+         AND r2.id > r1.id
+         AND r2.transaction_date >= r1.transaction_date
+         AND r2.transaction_date - r1.transaction_date <= ?
        JOIN merchants m ON m.id = r1.merchant_id
-       WHERE ABS(r1.transaction_date - r2.transaction_date) <= ?
+       WHERE r1.transaction_date >= ?
        AND r1.currency = r2.currency`,
     )
-    .all(DAY) as {
+    .all(DAY, dupWindowStart) as {
     id1: number;
     id2: number;
     merchant_id: number;
