@@ -1,0 +1,71 @@
+name: Add a merchant rule
+description: Suggest a new merchant rule (or fix an existing one)
+title: 'merchant: '
+labels: ['merchant-rule', 'good first issue']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping Lighthouse recognize more merchants! If you can,
+        please open a PR directly against `packages/core/src/domain/merchant_rules.ts`
+        instead — that's the fastest path. This issue template is for cases where
+        you've spotted a problem but don't have time for a PR.
+
+  - type: input
+    id: canonical
+    attributes:
+      label: Canonical slug
+      description: Lowercase, kebab-case (e.g. `klaviyo`, `home-depot`).
+      placeholder: 'merchant-slug'
+    validations:
+      required: true
+
+  - type: input
+    id: display
+    attributes:
+      label: Display name
+      description: How a normal customer would refer to it.
+      placeholder: 'Klaviyo'
+    validations:
+      required: true
+
+  - type: input
+    id: domains
+    attributes:
+      label: Email domains
+      description: Comma-separated list of domains used by this merchant for receipts.
+      placeholder: 'klaviyo.com, billing.klaviyo.com'
+
+  - type: textarea
+    id: aliases
+    attributes:
+      label: Statement-descriptor aliases
+      description: |
+        Examples of how this merchant appears as a raw string on credit-card
+        statements (which often leak into receipts).
+      placeholder: |
+        - "KLAVIYO 800-XXXXXXX"
+        - "KLAVIYO INC*EMAIL"
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      options:
+        - shopping
+        - groceries
+        - food
+        - streaming
+        - productivity
+        - developer
+        - fitness
+        - transit
+        - travel
+        - payments
+        - utilities
+        - cloud
+        - news
+        - apps
+        - other
+    validations:
+      required: true

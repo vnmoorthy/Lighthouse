@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ----- Foundations ----- */
+:root {
+  color-scheme: dark light;
+}
+
+html, body, #root {
+  height: 100%;
+}
+
+body {
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+}
+
+@media (prefers-color-scheme: light) {
+  body {
+    background-color: #fafaf7;
+    color: #0f172a;
+  }
+}
+
+/* ----- Selection ----- */
+::selection {
+  background: rgba(251, 191, 36, 0.35);
+}
+
+/* ----- Scrollbars (dark) ----- */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: #243044; }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* ----- Reusable card ----- */
+@layer components {
+  .lh-card {
+    @apply bg-lh-slab border border-lh-line rounded-2xl shadow-card;
+  }
+  .lh-input {
+    @apply bg-lh-paper border border-lh-line rounded-lg px-3 py-2 text-sm
+           outline-none focus:border-lh-azure transition;
+  }
+  .lh-btn {
+    @apply inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm
+           border border-lh-line bg-lh-paper hover:bg-lh-line2
+           transition-colors;
+  }
+  .lh-btn-primary {
+    @apply lh-btn bg-lh-gold text-lh-ink border-lh-gold hover:bg-amber-400;
+  }
+  .lh-pill {
+    @apply inline-flex items-center text-xs font-medium px-2 py-0.5
+           rounded-full bg-lh-line text-lh-mute;
+  }
+}
+
+/* Faint grid for the empty state. */
+.lh-grid-bg {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
+  background-size: 32px 32px;
+}

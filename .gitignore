@@ -1,0 +1,42 @@
+# Dependencies
+node_modules/
+.pnp/
+.pnp.js
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+apps/web/dist/
+
+# Env / secrets
+.env
+.env.local
+.env.*.local
+
+# Lighthouse runtime data
+.lighthouse/
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+
+# Test
+coverage/
+.vitest-cache/
+*.timestamp-*.mjs
+
+# OS / sandbox
+.git/objects/**/tmp_obj_*

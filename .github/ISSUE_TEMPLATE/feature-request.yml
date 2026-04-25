@@ -1,0 +1,25 @@
+name: Feature request
+description: Suggest an enhancement
+title: 'feat: '
+labels: ['enhancement']
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      description: |
+        Lighthouse leans toward small, focused features. The clearer the
+        underlying problem, the easier it is for a contributor to ship a
+        good fix.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
