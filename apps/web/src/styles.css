@@ -4,62 +4,165 @@
 
 /* ----- Foundations ----- */
 :root {
-  color-scheme: dark light;
+  color-scheme: dark;
+  --lh-fade: 200ms;
+  --lh-spring: cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 html, body, #root {
   height: 100%;
+  background: #08090c;
+  color: #eaeef5;
 }
 
 body {
-  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11', 'ss01', 'ss03';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
-@media (prefers-color-scheme: light) {
-  body {
-    background-color: #fafaf7;
-    color: #0f172a;
-  }
+/* All numeric content uses tabular figures for column alignment. */
+.tabular-nums, table, .lh-card, .font-mono {
+  font-variant-numeric: tabular-nums;
 }
 
 /* ----- Selection ----- */
 ::selection {
-  background: rgba(251, 191, 36, 0.35);
+  background: rgba(229, 142, 90, 0.35);
+  color: #fff;
 }
 
-/* ----- Scrollbars (dark) ----- */
+/* ----- Scrollbars ----- */
 ::-webkit-scrollbar { width: 10px; height: 10px; }
-::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 999px; }
-::-webkit-scrollbar-thumb:hover { background: #243044; }
+::-webkit-scrollbar-thumb { background: #1d212a; border-radius: 999px; }
+::-webkit-scrollbar-thumb:hover { background: #272d39; }
 ::-webkit-scrollbar-track { background: transparent; }
 
-/* ----- Reusable card ----- */
+/* ----- Focus ring ----- */
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(229, 142, 90, 0.25);
+  border-radius: 6px;
+}
+
+/* ----- Reusable components ----- */
 @layer components {
+  /* Card surface */
   .lh-card {
-    @apply bg-lh-slab border border-lh-line rounded-2xl shadow-card;
+    @apply bg-lh-slab border border-lh-line/80 rounded-2xl shadow-card transition-shadow duration-200;
   }
+  .lh-card-hover {
+    @apply lh-card hover:shadow-cardHover hover:border-lh-line2;
+  }
+  .lh-card-elev {
+    @apply bg-lh-slab2 border border-lh-line2/60 rounded-2xl shadow-card;
+  }
+
+  /* Inputs */
   .lh-input {
-    @apply bg-lh-paper border border-lh-line rounded-lg px-3 py-2 text-sm
-           outline-none focus:border-lh-azure transition;
+    @apply bg-lh-paper border border-lh-line rounded-md px-3 py-2 text-sm
+           outline-none transition-colors duration-150
+           placeholder:text-lh-mute/70
+           focus:border-lh-coral/60 focus:ring-2 focus:ring-lh-coral/15;
   }
+
+  .lh-select {
+    @apply lh-input pr-8 appearance-none cursor-pointer
+           bg-no-repeat bg-right;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a91a0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-position: right 10px center;
+  }
+
+  /* Buttons */
   .lh-btn {
-    @apply inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm
-           border border-lh-line bg-lh-paper hover:bg-lh-line2
-           transition-colors;
+    @apply inline-flex items-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium
+           border border-lh-line bg-lh-paper text-lh-fore
+           hover:bg-lh-slab2 hover:border-lh-line2
+           active:scale-[0.98]
+           transition-all duration-150 ease-spring
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100;
   }
   .lh-btn-primary {
-    @apply lh-btn bg-lh-gold text-lh-ink border-lh-gold hover:bg-amber-400;
+    @apply lh-btn bg-lh-coral border-lh-coral text-[#1a1410] font-semibold
+           hover:bg-lh-coralDeep hover:border-lh-coralDeep
+           shadow-[0_1px_0_0_rgba(255,255,255,0.15)_inset];
   }
+  .lh-btn-ghost {
+    @apply inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-sm
+           text-lh-mute hover:text-lh-fore hover:bg-lh-line/40
+           transition-colors duration-150;
+  }
+  .lh-btn-icon {
+    @apply lh-btn-ghost p-1.5;
+  }
+
+  /* Pills / badges */
   .lh-pill {
-    @apply inline-flex items-center text-xs font-medium px-2 py-0.5
-           rounded-full bg-lh-line text-lh-mute;
+    @apply inline-flex items-center gap-1 text-2xs font-medium px-2 py-0.5
+           rounded-full bg-lh-line/60 text-lh-mute border border-lh-line;
+  }
+  .lh-pill-status-active     { @apply bg-emerald-500/10 text-emerald-300 border-emerald-500/20; }
+  .lh-pill-status-trial      { @apply bg-amber-500/10  text-amber-300   border-amber-500/20;  }
+  .lh-pill-status-cancelled  { @apply bg-rose-500/10   text-rose-300    border-rose-500/20;   }
+  .lh-pill-status-unknown    { @apply bg-slate-500/10  text-slate-300   border-slate-500/20;  }
+
+  /* Section labels */
+  .lh-eyebrow {
+    @apply text-2xs font-medium uppercase tracking-[0.12em] text-lh-mute;
+  }
+
+  /* Sidebar nav item */
+  .lh-nav {
+    @apply flex items-center gap-3 rounded-md px-3 py-2 text-sm
+           text-lh-mute hover:text-lh-fore hover:bg-lh-line/40
+           transition-colors duration-150;
+  }
+  .lh-nav-active {
+    @apply text-lh-fore bg-lh-line2/70;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.04);
+  }
+
+  /* Skeleton loaders */
+  .lh-skeleton {
+    @apply rounded-md bg-gradient-to-r from-lh-line/40 via-lh-line2/60 to-lh-line/40
+           bg-[length:200%_100%] animate-shimmer;
+  }
+
+  /* Page-level decoration */
+  .lh-page-bg {
+    background:
+      radial-gradient(circle at 80% -10%, rgba(229,142,90,0.06) 0%, transparent 40%),
+      radial-gradient(circle at 0% 0%, rgba(124,193,233,0.04) 0%, transparent 40%);
+    background-color: #08090c;
+  }
+
+  /* Number animation helper */
+  .lh-num {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.015em;
   }
 }
 
-/* Faint grid for the empty state. */
-.lh-grid-bg {
-  background-image:
-    linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
-  background-size: 32px 32px;
+/* Recharts overrides */
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: rgba(255, 255, 255, 0.04);
+}
+.recharts-tooltip-cursor {
+  stroke: rgba(229, 142, 90, 0.3);
+  stroke-dasharray: 3 3;
+}
+
+/* Light mode (auto): a tasteful cream theme inspired by Anthropic */
+@media (prefers-color-scheme: light) {
+  html, body, #root {
+    background: #f8f5ef;
+    color: #2a2622;
+  }
+  ::selection {
+    background: rgba(216, 118, 66, 0.25);
+    color: #2a2622;
+  }
 }

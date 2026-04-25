@@ -1,5 +1,57 @@
 # Changelog
 
+## 0.4.0 — design-system overhaul (April 2026)
+
+A full pass through the dashboard for visual sophistication: tighter type
+scale, warm-modern dark palette, sparklines on KPI cards, refined chart
+tooltips, sortable table polish, smoother modal/drawer animations, proper
+empty states with iconography, skeleton loaders for every async surface,
+and a redesigned Settings page with sectioned cards.
+
+**Design system**
+- New palette: warm-modern dark with a coral primary (`#e58e5a`) and
+  data-viz accents tuned for readability at small sizes (mint, gold,
+  rose, azure, violet).
+- Tightened type scale (2xs through 4xl) with proper line-heights.
+- New utility classes: `lh-card`, `lh-card-elev`, `lh-btn-primary`,
+  `lh-eyebrow`, `lh-pill-status-*`, `lh-skeleton`, `lh-num`.
+- Tabular figures + Inter font features (`cv02 cv03 cv11 ss01 ss03`)
+  applied globally for crisp number alignment.
+- Page-level radial gradient background.
+
+**Components**
+- `KpiCard`: now renders a sparkline + delta-pct badge with semantic
+  tone (red/green/flat) and "expense up = bad" inversion.
+- `SpendChart`: custom tooltip card, average sub-stat in the header,
+  k-formatted y-axis ticks, refined gradient fill, `activeDot` pulse.
+- `TopMerchantsBar`: rank numbers, gradient bars, hover state.
+- `MerchantBadge`: 10-color palette, optional ring outline, tighter
+  typography.
+- `AlertsList`: type-tinted cards, "All clear" empty state with icon,
+  skeleton loader, headline + meta two-line layout.
+- `EmailViewer`: refined header with eyebrow + truncate, smaller iframe
+  toggle, smaller "Open in Gmail" button.
+- `Modal`: Escape-to-close, body-scroll-lock, slide-up animation,
+  optional footer slot.
+- `Layout`: sidebar groups (Workspace / Watch / System), refined
+  brand mark with halo, privacy footer card.
+
+**Pages**
+- `Overview`: inbox-health donut-bar redesign with colored markers,
+  loading skeleton across all 4 KPI cards, "View all →" CTA on alerts.
+- `Subscriptions`: tab pill polish, hover ChevronRight, drawer with
+  proper slide-in-right animation and skeleton state.
+- `Receipts`: refined search bar, confidence pill with a leading dot
+  status indicator, modal upgrade with line-items card.
+- `Alerts`: max-width tightened to 4xl for readability.
+- `Settings`: redesigned into sectioned cards (Account, LLM provider,
+  Sync, Danger zone). Real call-to-action with the primary coral
+  button.
+
+**Other**
+- Sidebar version: 0.3.1 → 0.4.0.
+- README badge color: gold → coral.
+
 ## 0.3.1 — vendor-neutral docs (April 2026)
 
 Cleaned up vendor-specific naming in user-facing surfaces. The README,

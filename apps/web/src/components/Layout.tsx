@@ -1,20 +1,42 @@
 /**
- * Main app shell — sidebar + content.
+ * App shell — sidebar + main column.
  *
- * Inspired by minimal "tools without ceremony" UIs (Linear, Things). The
- * left rail collapses to icons under 1024px.
+ * Sidebar groups: Workspace (overview/subs/receipts), Notifications (alerts),
+ * Settings. Each gets a group header for visual hierarchy. Active state is
+ * a tinted slab with a coral accent rail.
  */
 import { NavLink, Outlet } from 'react-router-dom';
-import { LayoutDashboard, Receipt, Repeat, Bell, Settings, AlertTriangle } from 'lucide-react';
+import {
+  LayoutDashboard,
+  Receipt,
+  Repeat,
+  Bell,
+  Settings,
+  ShieldCheck,
+} from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { api, type SummaryResponse } from '../lib/api';
 
-const NAV = [
-  { to: '/', icon: LayoutDashboard, label: 'Overview', end: true },
-  { to: '/subscriptions', icon: Repeat, label: 'Subscriptions' },
-  { to: '/receipts', icon: Receipt, label: 'Receipts' },
-  { to: '/alerts', icon: Bell, label: 'Alerts' },
-  { to: '/settings', icon: Settings, label: 'Settings' },
+const NAV_GROUPS: {
+  label: string;
+  items: { to: string; icon: typeof LayoutDashboard; label: string; end?: boolean }[];
+}[] = [
+  {
+    label: 'Workspace',
+    items: [
+      { to: '/', icon: LayoutDashboard, label: 'Overview', end: true },
+      { to: '/subscriptions', icon: Repeat, label: 'Subscriptions' },
+      { to: '/receipts', icon: Receipt, label: 'Receipts' },
+    ],
+  },
+  {
+    label: 'Watch',
+    items: [{ to: '/alerts', icon: Bell, label: 'Alerts' }],
+  },
+  {
+    label: 'System',
+    items: [{ to: '/settings', icon: Settings, label: 'Settings' }],
+  },
 ];
 
 export default function Layout() {
@@ -25,55 +47,67 @@ export default function Layout() {
   const openAlerts = summary.data?.kpis.open_alerts ?? 0;
 
   return (
-    <div className="flex min-h-screen">
-      <aside className="w-56 shrink-0 border-r border-lh-line/60 bg-lh-paper/50 flex flex-col">
-        <div className="px-5 pt-6 pb-4">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-lh-gold flex items-center justify-center">
-              <div className="w-2.5 h-2.5 rounded-full bg-lh-ink" />
+    <div className="flex min-h-screen lh-page-bg">
+      {/* ---- Sidebar ---- */}
+      <aside className="w-60 shrink-0 border-r border-lh-line/60 bg-lh-paper/70 backdrop-blur-sm flex flex-col">
+        {/* Brand */}
+        <div className="px-5 pt-6 pb-5">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-lh-gold to-lh-coral flex items-center justify-center shadow-[0_0_24px_-4px_rgba(245,185,79,0.5)]">
+                <div className="w-3 h-3 rounded-full bg-lh-ink" />
+              </div>
+              <div className="absolute -inset-1 rounded-full bg-lh-gold/10 blur-md -z-10" />
             </div>
             <div>
-              <div className="text-base font-semibold tracking-tight">Lighthouse</div>
-              <div className="text-[11px] text-lh-mute">v0.3.1 · local</div>
+              <div className="text-[15px] font-semibold tracking-tightest leading-none">Lighthouse</div>
+              <div className="text-2xs text-lh-mute mt-0.5 tabular-nums">v0.4.0 · local</div>
             </div>
           </div>
         </div>
 
-        <nav className="flex-1 px-3 py-2 space-y-1">
-          {NAV.map(({ to, icon: Icon, label, end }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={end}
-              className={({ isActive }) =>
-                [
-                  'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
-                  isActive
-                    ? 'bg-lh-line2 text-lh-fore'
-                    : 'text-lh-mute hover:text-lh-fore hover:bg-lh-line/40',
-                ].join(' ')
-              }
-            >
-              <Icon size={16} />
-              <span>{label}</span>
-              {to === '/alerts' && openAlerts > 0 ? (
-                <span className="ml-auto inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-rose-500/20 text-rose-300 text-xs">
-                  {openAlerts}
-                </span>
-              ) : null}
-            </NavLink>
+        {/* Nav groups */}
+        <nav className="flex-1 px-3 py-2 space-y-5">
+          {NAV_GROUPS.map((group) => (
+            <div key={group.label}>
+              <div className="px-3 mb-1.5 lh-eyebrow">{group.label}</div>
+              <div className="space-y-0.5">
+                {group.items.map(({ to, icon: Icon, label, end }) => (
+                  <NavLink
+                    key={to}
+                    to={to}
+                    end={end}
+                    className={({ isActive }) =>
+                      ['lh-nav', isActive ? 'lh-nav-active' : ''].join(' ')
+                    }
+                  >
+                    <Icon size={15} strokeWidth={1.75} />
+                    <span>{label}</span>
+                    {to === '/alerts' && openAlerts > 0 ? (
+                      <span className="ml-auto inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-lh-rose/15 text-lh-rose text-2xs font-medium">
+                        {openAlerts}
+                      </span>
+                    ) : null}
+                  </NavLink>
+                ))}
+              </div>
+            </div>
           ))}
         </nav>
 
-        <div className="px-4 py-4 border-t border-lh-line/60 text-xs text-lh-mute">
-          <div className="flex items-center gap-2">
-            <AlertTriangle size={12} />
-            All data stays on this machine.
+        {/* Footer: privacy reassurance */}
+        <div className="mx-3 mb-4 p-3 rounded-lg bg-lh-line/30 border border-lh-line/60">
+          <div className="flex items-start gap-2">
+            <ShieldCheck size={14} className="text-lh-mint mt-0.5 shrink-0" />
+            <div className="text-2xs text-lh-mute leading-relaxed">
+              All data lives on this machine. Lighthouse never phones home.
+            </div>
           </div>
         </div>
       </aside>
 
-      <main className="flex-1 min-w-0">
+      {/* ---- Main ---- */}
+      <main className="flex-1 min-w-0 animate-fade-in">
         <Outlet />
       </main>
     </div>
