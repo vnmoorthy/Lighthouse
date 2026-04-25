@@ -34,7 +34,7 @@ export default function Layout() {
             </div>
             <div>
               <div className="text-base font-semibold tracking-tight">Lighthouse</div>
-              <div className="text-[11px] text-lh-mute">v0.1.0 · local</div>
+              <div className="text-[11px] text-lh-mute">v0.3.0 · local</div>
             </div>
           </div>
         </div>

@@ -5,7 +5,7 @@
 <p align="center">
   <a href="https://github.com/vnmoorthy/Lighthouse/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/vnmoorthy/Lighthouse/ci.yml?branch=main&label=CI&style=flat-square" alt="CI"></a>
   <a href="./LICENSE"><img src="https://img.shields.io/github/license/vnmoorthy/Lighthouse?style=flat-square&color=blue" alt="License"></a>
-  <a href="./CHANGELOG.md"><img src="https://img.shields.io/badge/version-0.2.0-fbbf24?style=flat-square" alt="Version"></a>
+  <a href="./CHANGELOG.md"><img src="https://img.shields.io/badge/version-0.3.0-fbbf24?style=flat-square" alt="Version"></a>
   <a href="https://github.com/vnmoorthy/Lighthouse/stargazers"><img src="https://img.shields.io/github/stars/vnmoorthy/Lighthouse?style=flat-square&color=fbbf24" alt="Stars"></a>
   <a href="https://github.com/vnmoorthy/Lighthouse/issues?q=is%3Aopen+label%3A%22good+first+issue%22"><img src="https://img.shields.io/github/issues/vnmoorthy/Lighthouse/good%20first%20issue?style=flat-square&color=84cc16" alt="Good first issues"></a>
 </p>
@@ -28,7 +28,7 @@
 ## What it does
 
 <div align="center">
-  <img src="./docs/preview/overview.svg" alt="Lighthouse Overview page — KPIs, spend chart, top merchants, alerts" width="90%" />
+  <img src="./docs/preview/overview.png" alt="Lighthouse Overview page — KPIs, spend chart, top merchants, alerts" width="90%" />
 </div>
 
 Three things that are surprisingly hard to assemble today:
@@ -37,12 +37,10 @@ Three things that are surprisingly hard to assemble today:
 2. **Every active subscription** with its renewal date, amount, and a one-click *"show me the email that proves this is recurring"* view.
 3. **Free-trial-ending alerts** and **price-increase alerts** on existing subscriptions.
 
-> *Previews above are accurate mockups generated from the React source. The live dashboard is rendered by Recharts + Tailwind and looks identical — clone the repo and run `npm run seed:demo && npm run serve` to see the real thing in 30 seconds.*
-
 ### Subscriptions you actually still pay for
 
 <div align="center">
-  <img src="./docs/preview/subscriptions.svg" alt="Subscriptions page — sortable table of recurring charges" width="90%" />
+  <img src="./docs/preview/subscriptions.png" alt="Subscriptions page — sortable table of recurring charges" width="90%" />
 </div>
 
 Every recurring charge in your inbox, deduped across the 24 monthly Netflix receipts you've gotten, with status (`active` / `trial` / `cancelled`), per-month cost (so a $120 annual sub appears as $10/mo), next renewal date, and a one-click drawer that shows the source email so you can verify it for yourself.
@@ -50,7 +48,7 @@ Every recurring charge in your inbox, deduped across the 24 monthly Netflix rece
 ### Receipts, fully searchable
 
 <div align="center">
-  <img src="./docs/preview/receipts.svg" alt="Receipts page — searchable filterable table of every purchase" width="90%" />
+  <img src="./docs/preview/receipts.png" alt="Receipts page — searchable filterable table of every purchase" width="90%" />
 </div>
 
 Filter by merchant, date range, free-text search across order numbers and merchant names. Each row opens a modal with the line items the LLM extracted, the original email, and an extraction confidence score (so you can spot-check the model's work).
@@ -58,7 +56,7 @@ Filter by merchant, date range, free-text search across order numbers and mercha
 ### Alerts you'd otherwise miss
 
 <div align="center">
-  <img src="./docs/preview/alerts.svg" alt="Alerts page — trial endings, price changes, duplicates, new subscriptions" width="90%" />
+  <img src="./docs/preview/alerts.png" alt="Alerts page — trial endings, price changes, duplicates, new subscriptions" width="90%" />
 </div>
 
 Lighthouse runs four alert checks at the end of every sync:

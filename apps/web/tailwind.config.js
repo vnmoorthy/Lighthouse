@@ -1,11 +1,13 @@
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+
+// Anchor content globs at this file's directory so Tailwind finds the source
+// regardless of which cwd Vite happens to launch from.
+const HERE = dirname(fileURLToPath(import.meta.url));
+
 /** @type {import('tailwindcss').Config} */
 export default {
-  // Content paths are absolute-from-config-file so this works whether Vite
-  // runs from the repo root or from apps/web.
-  content: [
-    new URL('./index.html', import.meta.url).pathname,
-    new URL('./src/**/*.{ts,tsx}', import.meta.url).pathname,
-  ],
+  content: [join(HERE, 'index.html'), join(HERE, 'src/**/*.{ts,tsx}')],
   darkMode: 'media',
   theme: {
     extend: {

@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.3.0 — real screenshots + launch playbooks (April 2026)
+
+**Real screenshots.** Replaced the hand-drawn SVG mockups in `docs/preview/`
+with PNGs captured from the actual rendered React app. Built a tiny mock-API
+harness so the dashboard could be rendered end-to-end (Playwright Chromium
+headless, retina viewport) without needing the full SQLite stack.
+
+**Tailwind / PostCSS fix.** While re-rendering, discovered that the v0.2.0
+"absolute content paths" change actually broke Tailwind's content scan. Real
+fix: use `path.join(dirname(fileURLToPath(import.meta.url)), …)` and pass the
+config path explicitly to the PostCSS plugin so it doesn't depend on Vite's
+cwd. CSS bundle now includes all utility classes (~20 KB vs the previous ~5
+KB stub).
+
+**Launch materials.** Added `docs/launch/` with paste-ready Show HN post,
+Twitter threads (technical + visual), Loom shot list, and an
+hour-by-hour launch-day operations checklist.
+
+**Version visible in dashboard.** The sidebar `v0.1.0` was hardcoded; now
+reads `v0.3.0`.
+
 ## 0.2.0 — bruteforce review pass (April 2026)
 
 A self-imposed audit + polish pass: read every file with fresh eyes, ran the
