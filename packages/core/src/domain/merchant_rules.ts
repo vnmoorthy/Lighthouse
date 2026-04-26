@@ -75,7 +75,7 @@ export const MERCHANT_RULES: MerchantRule[] = [
   { canonical: 'doordash', display: 'DoorDash', category: 'food',
     domains: ['doordash.com'], aliasPatterns: [/door\s*dash/i] },
   { canonical: 'uber-eats', display: 'Uber Eats', category: 'food',
-    domains: ['ubereats.com'], aliasPatterns: [/uber[\s*\-]*eats/i] },
+    domains: ['ubereats.com'], aliasPatterns: [/uber[\s*-]*eats/i] },
   { canonical: 'grubhub', display: 'Grubhub', category: 'food',
     domains: ['grubhub.com'], aliasPatterns: [/^grubhub\b/i] },
   { canonical: 'instacart', display: 'Instacart', category: 'groceries',

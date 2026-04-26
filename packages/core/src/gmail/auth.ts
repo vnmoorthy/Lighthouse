@@ -11,10 +11,10 @@
  *   5. Subsequent runs: read encrypted refresh token, ask Google for a fresh
  *      access token, use it. The googleapis OAuth2Client handles caching.
  */
-import { OAuth2Client } from 'google-auth-library';
+import type { OAuth2Client } from 'google-auth-library';
 import { google, type gmail_v1 } from 'googleapis';
 import { createServer } from 'node:http';
-import { AddressInfo } from 'node:net';
+import type { AddressInfo } from 'node:net';
 import open from 'open';
 import { config } from '../config.js';
 import { kvGet, kvSet, KV_KEYS } from '../db/kv.js';

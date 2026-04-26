@@ -1,0 +1,177 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 800" font-family="Inter, system-ui, sans-serif">
+  <!-- background -->
+  <rect width="1280" height="800" fill="#0b0f17"/>
+
+  <!-- sidebar -->
+  <rect x="0" y="0" width="224" height="800" fill="#0f1623"/>
+  <rect x="223" y="0" width="1" height="800" fill="#1f2937" opacity="0.6"/>
+  <!-- logo -->
+  <circle cx="36" cy="36" r="14" fill="#fbbf24"/>
+  <circle cx="36" cy="36" r="5" fill="#0b0f17"/>
+  <text x="60" y="34" fill="#e7eef8" font-size="16" font-weight="600">Lighthouse</text>
+  <text x="60" y="50" fill="#94a3b8" font-size="11">v0.1.0 · local</text>
+  <!-- nav -->
+  <g font-size="13">
+    <rect x="12" y="84" width="200" height="36" rx="8" fill="#243044"/>
+    <circle cx="32" cy="102" r="2.5" fill="#e7eef8"/><circle cx="40" cy="102" r="2.5" fill="#e7eef8"/><circle cx="32" cy="110" r="2.5" fill="#e7eef8"/><circle cx="40" cy="110" r="2.5" fill="#e7eef8"/>
+    <text x="56" y="106" fill="#e7eef8">Overview</text>
+    <text x="56" y="138" fill="#94a3b8">Subscriptions</text>
+    <text x="56" y="170" fill="#94a3b8">Receipts</text>
+    <text x="56" y="202" fill="#94a3b8">Alerts</text>
+    <rect x="180" y="190" width="22" height="18" rx="9" fill="#fda4af" opacity="0.2"/>
+    <text x="186" y="203" fill="#fda4af" font-size="11" font-weight="600">3</text>
+    <text x="56" y="234" fill="#94a3b8">Settings</text>
+  </g>
+  <text x="20" y="772" fill="#94a3b8" font-size="11">All data stays on this machine.</text>
+
+  <!-- main header -->
+  <text x="256" y="50" fill="#e7eef8" font-size="22" font-weight="600">Overview</text>
+  <text x="256" y="74" fill="#94a3b8" font-size="13">The state of your money, derived from your inbox alone — never your bank.</text>
+  <line x1="256" y1="100" x2="1248" y2="100" stroke="#1f2937" opacity="0.4"/>
+
+  <!-- KPI cards -->
+  <g font-family="Inter">
+    <!-- card 1 -->
+    <rect x="256" y="124" width="232" height="100" rx="16" fill="#131a26" stroke="#1f2937"/>
+    <text x="276" y="148" fill="#94a3b8" font-size="10" letter-spacing="1.5">LAST 30 DAYS</text>
+    <text x="276" y="186" fill="#e7eef8" font-size="28" font-weight="600">$1,247.83</text>
+    <text x="276" y="208" fill="#94a3b8" font-size="11">Sum of receipts</text>
+
+    <rect x="500" y="124" width="232" height="100" rx="16" fill="#131a26" stroke="#1f2937"/>
+    <text x="520" y="148" fill="#94a3b8" font-size="10" letter-spacing="1.5">ACTIVE SUBSCRIPTIONS</text>
+    <text x="520" y="186" fill="#e7eef8" font-size="28" font-weight="600">11</text>
+    <text x="520" y="208" fill="#94a3b8" font-size="11">1 on trial</text>
+
+    <rect x="744" y="124" width="232" height="100" rx="16" fill="#131a26" stroke="#1f2937"/>
+    <text x="764" y="148" fill="#94a3b8" font-size="10" letter-spacing="1.5">MONTHLY SUBS</text>
+    <text x="764" y="186" fill="#e7eef8" font-size="28" font-weight="600">$312.46</text>
+    <text x="764" y="208" fill="#94a3b8" font-size="11">$3,749 / yr run rate</text>
+
+    <rect x="988" y="124" width="260" height="100" rx="16" fill="#131a26" stroke="#1f2937"/>
+    <text x="1008" y="148" fill="#94a3b8" font-size="10" letter-spacing="1.5">OPEN ALERTS</text>
+    <text x="1008" y="186" fill="#e7eef8" font-size="28" font-weight="600">3</text>
+    <text x="1008" y="208" fill="#94a3b8" font-size="11">Worth a look</text>
+  </g>
+
+  <!-- spend chart -->
+  <g>
+    <rect x="256" y="248" width="640" height="320" rx="16" fill="#131a26" stroke="#1f2937"/>
+    <text x="276" y="276" fill="#e7eef8" font-size="13" font-weight="500">Spend by month</text>
+    <text x="876" y="276" fill="#94a3b8" font-size="11" text-anchor="end">12 months · all merchants</text>
+    <!-- gridlines -->
+    <line x1="280" y1="320" x2="876" y2="320" stroke="#1f2937"/>
+    <line x1="280" y1="380" x2="876" y2="380" stroke="#1f2937"/>
+    <line x1="280" y1="440" x2="876" y2="440" stroke="#1f2937"/>
+    <line x1="280" y1="500" x2="876" y2="500" stroke="#1f2937"/>
+    <!-- area -->
+    <defs>
+      <linearGradient id="sg" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0%" stop-color="#fbbf24" stop-opacity="0.45"/>
+        <stop offset="100%" stop-color="#fbbf24" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <path d="M280 480 L330 470 L380 460 L430 430 L480 410 L530 420 L580 380 L630 360 L680 410 L730 350 L780 320 L830 340 L876 310 L876 540 L280 540 Z" fill="url(#sg)"/>
+    <path d="M280 480 L330 470 L380 460 L430 430 L480 410 L530 420 L580 380 L630 360 L680 410 L730 350 L780 320 L830 340 L876 310" stroke="#fbbf24" stroke-width="2" fill="none"/>
+    <!-- y axis labels -->
+    <text x="272" y="324" fill="#94a3b8" font-size="10" text-anchor="end">$2,000</text>
+    <text x="272" y="384" fill="#94a3b8" font-size="10" text-anchor="end">$1,500</text>
+    <text x="272" y="444" fill="#94a3b8" font-size="10" text-anchor="end">$1,000</text>
+    <text x="272" y="504" fill="#94a3b8" font-size="10" text-anchor="end">$500</text>
+    <!-- x axis labels -->
+    <text x="280" y="558" fill="#94a3b8" font-size="10">May 25</text>
+    <text x="380" y="558" fill="#94a3b8" font-size="10">Jul 25</text>
+    <text x="480" y="558" fill="#94a3b8" font-size="10">Sep 25</text>
+    <text x="580" y="558" fill="#94a3b8" font-size="10">Nov 25</text>
+    <text x="680" y="558" fill="#94a3b8" font-size="10">Jan 26</text>
+    <text x="780" y="558" fill="#94a3b8" font-size="10">Mar 26</text>
+  </g>
+
+  <!-- top merchants -->
+  <g>
+    <rect x="912" y="248" width="336" height="320" rx="16" fill="#131a26" stroke="#1f2937"/>
+    <text x="932" y="276" fill="#e7eef8" font-size="13" font-weight="500">Top merchants · last 12 months</text>
+    <!-- rows -->
+    <g font-size="13">
+      <!-- Amazon -->
+      <rect x="932" y="294" width="22" height="22" rx="4" fill="#fb923c" opacity="0.2"/>
+      <text x="943" y="310" fill="#fdba74" font-size="11" font-weight="600" text-anchor="middle">AM</text>
+      <text x="964" y="310" fill="#e7eef8">Amazon</text>
+      <text x="1228" y="310" fill="#94a3b8" text-anchor="end" font-size="11">$2,147</text>
+      <rect x="964" y="320" width="264" height="6" rx="3" fill="#1f2937"/>
+      <rect x="964" y="320" width="264" height="6" rx="3" fill="#fbbf24"/>
+      <!-- DoorDash -->
+      <rect x="932" y="342" width="22" height="22" rx="4" fill="#a78bfa" opacity="0.2"/>
+      <text x="943" y="358" fill="#c4b5fd" font-size="11" font-weight="600" text-anchor="middle">DD</text>
+      <text x="964" y="358" fill="#e7eef8">DoorDash</text>
+      <text x="1228" y="358" fill="#94a3b8" text-anchor="end" font-size="11">$1,422</text>
+      <rect x="964" y="368" width="264" height="6" rx="3" fill="#1f2937"/>
+      <rect x="964" y="368" width="174" height="6" rx="3" fill="url(#bm)"/>
+      <!-- Netflix -->
+      <rect x="932" y="390" width="22" height="22" rx="4" fill="#22d3ee" opacity="0.2"/>
+      <text x="943" y="406" fill="#67e8f9" font-size="11" font-weight="600" text-anchor="middle">NE</text>
+      <text x="964" y="406" fill="#e7eef8">Netflix</text>
+      <text x="1228" y="406" fill="#94a3b8" text-anchor="end" font-size="11">$276</text>
+      <rect x="964" y="416" width="264" height="6" rx="3" fill="#1f2937"/>
+      <rect x="964" y="416" width="34" height="6" rx="3" fill="url(#bm)"/>
+      <!-- Uber -->
+      <rect x="932" y="438" width="22" height="22" rx="4" fill="#34d399" opacity="0.2"/>
+      <text x="943" y="454" fill="#6ee7b7" font-size="11" font-weight="600" text-anchor="middle">UB</text>
+      <text x="964" y="454" fill="#e7eef8">Uber</text>
+      <text x="1228" y="454" fill="#94a3b8" text-anchor="end" font-size="11">$823</text>
+      <rect x="964" y="464" width="264" height="6" rx="3" fill="#1f2937"/>
+      <rect x="964" y="464" width="100" height="6" rx="3" fill="url(#bm)"/>
+      <!-- Apple -->
+      <rect x="932" y="486" width="22" height="22" rx="4" fill="#f9a8d4" opacity="0.2"/>
+      <text x="943" y="502" fill="#fbcfe8" font-size="11" font-weight="600" text-anchor="middle">AP</text>
+      <text x="964" y="502" fill="#e7eef8">Apple</text>
+      <text x="1228" y="502" fill="#94a3b8" text-anchor="end" font-size="11">$394</text>
+      <rect x="964" y="512" width="264" height="6" rx="3" fill="#1f2937"/>
+      <rect x="964" y="512" width="48" height="6" rx="3" fill="url(#bm)"/>
+    </g>
+    <defs>
+      <linearGradient id="bm" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0%" stop-color="#fbbf24"/><stop offset="100%" stop-color="#fda4af"/>
+      </linearGradient>
+    </defs>
+  </g>
+
+  <!-- alerts row + inbox health -->
+  <g>
+    <text x="266" y="608" fill="#e7eef8" font-size="13" font-weight="500">Recent alerts</text>
+    <!-- alert 1 -->
+    <rect x="256" y="620" width="640" height="60" rx="12" fill="#131a26" stroke="#fbbf24" stroke-opacity="0.3"/>
+    <circle cx="282" cy="650" r="4" fill="#fbbf24"/>
+    <text x="304" y="644" fill="#94a3b8" font-size="10" letter-spacing="1">TRIAL ENDING</text>
+    <text x="450" y="644" fill="#94a3b8" font-size="10">2 hours ago</text>
+    <text x="304" y="664" fill="#e7eef8" font-size="13">Anthropic trial ends in 5 days (then $20.00).</text>
+    <!-- alert 2 -->
+    <rect x="256" y="690" width="640" height="60" rx="12" fill="#131a26" stroke="#fda4af" stroke-opacity="0.3"/>
+    <circle cx="282" cy="720" r="4" fill="#fda4af"/>
+    <text x="304" y="714" fill="#94a3b8" font-size="10" letter-spacing="1">PRICE CHANGE</text>
+    <text x="450" y="714" fill="#94a3b8" font-size="10">6 hours ago</text>
+    <text x="304" y="734" fill="#e7eef8" font-size="13">OpenAI price increase: $20.00 → $22.00.</text>
+  </g>
+
+  <g>
+    <rect x="912" y="592" width="336" height="180" rx="16" fill="#131a26" stroke="#1f2937"/>
+    <text x="932" y="616" fill="#e7eef8" font-size="13" font-weight="500">Inbox health</text>
+    <text x="932" y="632" fill="#94a3b8" font-size="11">24,317 emails processed</text>
+    <g font-size="11">
+      <text x="932" y="660" fill="#e7eef8">Extracted</text><text x="1228" y="660" fill="#94a3b8" text-anchor="end">21,490</text>
+      <rect x="932" y="666" width="296" height="4" rx="2" fill="#1f2937"/>
+      <rect x="932" y="666" width="261" height="4" rx="2" fill="#34d399" opacity="0.6"/>
+
+      <text x="932" y="690" fill="#e7eef8">Skipped</text><text x="1228" y="690" fill="#94a3b8" text-anchor="end">2,704</text>
+      <rect x="932" y="696" width="296" height="4" rx="2" fill="#1f2937"/>
+      <rect x="932" y="696" width="33" height="4" rx="2" fill="#94a3b8" opacity="0.6"/>
+
+      <text x="932" y="720" fill="#e7eef8">Pending</text><text x="1228" y="720" fill="#94a3b8" text-anchor="end">88</text>
+      <rect x="932" y="726" width="296" height="4" rx="2" fill="#1f2937"/>
+      <rect x="932" y="726" width="2" height="4" rx="2" fill="#fbbf24" opacity="0.6"/>
+
+      <text x="932" y="750" fill="#e7eef8">Error</text><text x="1228" y="750" fill="#94a3b8" text-anchor="end">35</text>
+      <rect x="932" y="756" width="296" height="4" rx="2" fill="#1f2937"/>
+      <rect x="932" y="756" width="1" height="4" rx="2" fill="#fda4af" opacity="0.6"/>
+    </g>
+  </g>
+</svg>
