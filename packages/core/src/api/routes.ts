@@ -11,12 +11,16 @@ import { z } from 'zod';
 import {
   countEmailsByStatus,
   dismissAlert,
+  getCategoryBreakdown,
   getEmailById,
   getMonthlyTotals,
   getReceiptById,
   getSubscriptionById,
+  getMerchantTimeline,
+  getSubscriptionHealth,
   getSyncRun,
   getTopMerchants,
+  getYearOverYear,
   listMerchants,
   listOpenAlerts,
   listReceipts,
@@ -27,6 +31,8 @@ import {
 import { kvGet, KV_KEYS } from '../db/kv.js';
 import { config } from '../config.js';
 import { toMonthlyCents } from '../domain/currency.js';
+import { getCancelLink } from '../domain/cancel_links.js';
+import { getMerchantById } from '../db/queries.js';
 import { syncOrchestrator } from './sync_orchestrator.js';
 import { log } from '../logger.js';
 
@@ -38,6 +44,7 @@ interface ReceiptListQuery {
   from?: string;
   to?: string;
   merchant?: string;
+  category?: string;
   q?: string;
   limit?: string;
   offset?: string;
@@ -57,6 +64,8 @@ export function registerRoutes(app: FastifyInstance): void {
   app.get('/api/summary', async () => {
     const monthly = getMonthlyTotals(12);
     const top = getTopMerchants(10, 365);
+    const categories = getCategoryBreakdown(365);
+    const yoy = getYearOverYear();
     const allActive = listSubscriptions('active');
     const trial = listSubscriptions('trial');
 
@@ -92,6 +101,8 @@ export function registerRoutes(app: FastifyInstance): void {
         open_alerts: openAlertsCount,
       },
       email_processing: counts,
+      categories,
+      year_over_year: yoy,
     };
   });
 
@@ -104,6 +115,7 @@ export function registerRoutes(app: FastifyInstance): void {
         from: q.from ? Number.parseInt(q.from, 10) : null,
         to: q.to ? Number.parseInt(q.to, 10) : null,
         merchantId: q.merchant ? Number.parseInt(q.merchant, 10) : null,
+        category: q.category ?? null,
         q: q.q ?? null,
         limit: q.limit ? Number.parseInt(q.limit, 10) : 50,
         offset: q.offset ? Number.parseInt(q.offset, 10) : 0,
@@ -193,10 +205,13 @@ export function registerRoutes(app: FastifyInstance): void {
       if (!s) return reply.code(404).send({ error: 'not_found' });
       const charges = listChargesForSubscription(id);
       const lastEmail = s.last_seen_email_id ? getEmailById(s.last_seen_email_id) : null;
+      const merchant = getMerchantById(s.merchant_id);
+      const cancel_link = getCancelLink(merchant?.canonical_name);
       return {
         ...s,
         monthly_cost_cents: toMonthlyCents(s.amount_cents, s.billing_cycle),
         charges,
+        cancel_link,
         proof_email: lastEmail
           ? {
               id: lastEmail.id,
@@ -208,6 +223,8 @@ export function registerRoutes(app: FastifyInstance): void {
       };
     },
   );
+
+  app.get('/api/subscriptions-health', async () => getSubscriptionHealth());
 
   app.post(
     '/api/subscriptions/:id/mark-cancelled',
@@ -272,6 +289,16 @@ export function registerRoutes(app: FastifyInstance): void {
       category: m.category,
     })),
   }));
+
+  app.get(
+    '/api/merchants/:id/timeline',
+    async (req: FastifyRequest<{ Params: { id: string } }>, reply) => {
+      const id = Number.parseInt(req.params.id, 10);
+      const t = getMerchantTimeline(id);
+      if (!t) return reply.code(404).send({ error: 'not_found' });
+      return t;
+    },
+  );
 
   // --- Sync ------------------------------------------------------------
   app.post('/api/sync', async () => {

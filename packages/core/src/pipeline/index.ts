@@ -101,9 +101,10 @@ async function processOne(e: EmailRow, stats: PipelineStats): Promise<void> {
     return;
   }
 
-  // Stage 2 — receipts. We extract receipts on both `receipt` and
-  // `subscription_renewal` since renewal emails *are* receipts.
-  if (cls === 'receipt' || cls === 'subscription_renewal') {
+  // Stage 2 — receipts. We extract receipts on `receipt`, `refund`, and
+  // `subscription_renewal` (the latter two share the receipt extractor;
+  // refunds are stored as receipts with negative totals).
+  if (cls === 'receipt' || cls === 'refund' || cls === 'subscription_renewal') {
     try {
       const r = await withRetry(() => extractReceipt(e), `receipt(${e.id})`);
       if (!r.extraction.is_receipt) {
@@ -111,10 +112,15 @@ async function processOne(e: EmailRow, stats: PipelineStats): Promise<void> {
         stats.skipped++;
       } else {
         const merchant = await resolveMerchant(r.extraction.merchant_name, e.from_address);
+        // Refunds are stored as negative receipts so totals net out cleanly.
+        const signedAmount =
+          cls === 'refund' && r.extraction.total_amount_cents > 0
+            ? -r.extraction.total_amount_cents
+            : r.extraction.total_amount_cents;
         const receiptId = insertReceipt({
           email_id: e.id,
           merchant_id: merchant.id,
-          total_amount_cents: r.extraction.total_amount_cents,
+          total_amount_cents: signedAmount,
           currency: r.extraction.currency || 'USD',
           transaction_date: ymdToMs(r.extraction.transaction_date),
           line_items_json: r.extraction.line_items

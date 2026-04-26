@@ -24,6 +24,10 @@ nine buckets it belongs to. Be conservative — when in doubt, choose
 - receipt: a one-time purchase confirmation. Common signals: "thanks for
   your order", "your receipt", "payment received", an order number, a total
   amount. Includes Amazon, Apple, Etsy, food delivery, ride-share.
+- refund: a refund or credit confirmation, money flowing back TO the user.
+  Common signals: "your refund has been issued", "we've processed your return",
+  a credit memo, a negative amount. NOT to be confused with a partial refund
+  inside a receipt (which is still a receipt). Pure refund emails go here.
 - subscription_signup: confirmation that the user *just started* a recurring
   service. Often "welcome" or "your subscription has started".
 - subscription_renewal: a recurring charge has been processed. Usually
@@ -47,6 +51,7 @@ Important:
 const ClassifySchema = z.object({
   classification: z.enum([
     'receipt',
+    'refund',
     'subscription_signup',
     'subscription_renewal',
     'subscription_cancellation',

@@ -18,7 +18,11 @@ import {
   Lock,
   HardDrive,
   Globe,
+  Sun,
+  Moon,
+  Monitor,
 } from 'lucide-react';
+import { useTheme, type Theme } from '../lib/theme';
 
 export default function SettingsPage() {
   const qc = useQueryClient();
@@ -88,6 +92,14 @@ export default function SettingsPage() {
                     : 'never'
                 }
               />
+            </SectionCard>
+
+            {/* Appearance */}
+            <SectionCard
+              title="Appearance"
+              description="Lighthouse follows your OS appearance by default. Override here if you'd like."
+            >
+              <ThemeSwitch />
             </SectionCard>
 
             {/* Provider */}
@@ -186,6 +198,34 @@ export default function SettingsPage() {
           </>
         )}
       </div>
+    </div>
+  );
+}
+
+function ThemeSwitch() {
+  const [theme, setTheme] = useTheme();
+  const opts: { value: Theme; label: string; icon: React.ReactNode }[] = [
+    { value: 'system', label: 'System', icon: <Monitor size={13} /> },
+    { value: 'dark', label: 'Dark', icon: <Moon size={13} /> },
+    { value: 'light', label: 'Light', icon: <Sun size={13} /> },
+  ];
+  return (
+    <div className="flex gap-1 bg-lh-paper rounded-md p-1 border border-lh-line w-fit">
+      {opts.map((o) => (
+        <button
+          key={o.value}
+          type="button"
+          onClick={() => setTheme(o.value)}
+          className={`flex items-center gap-1.5 px-3 py-1.5 text-2xs font-medium rounded-sm transition-all ${
+            theme === o.value
+              ? 'bg-lh-line2 text-lh-fore shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]'
+              : 'text-lh-mute hover:text-lh-fore'
+          }`}
+        >
+          {o.icon}
+          {o.label}
+        </button>
+      ))}
     </div>
   );
 }

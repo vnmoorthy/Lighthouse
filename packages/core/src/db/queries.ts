@@ -183,6 +183,7 @@ export interface ReceiptListFilter {
   from?: number | null;
   to?: number | null;
   merchantId?: number | null;
+  category?: string | null;
   q?: string | null;
   limit?: number;
   offset?: number;
@@ -197,6 +198,7 @@ export function listReceipts(f: ReceiptListFilter = {}): {
   if (f.from != null) { where.push('r.transaction_date >= ?'); params.push(f.from); }
   if (f.to != null) { where.push('r.transaction_date <= ?'); params.push(f.to); }
   if (f.merchantId != null) { where.push('r.merchant_id = ?'); params.push(f.merchantId); }
+  if (f.category) { where.push('m.category = ?'); params.push(f.category); }
   if (f.q) {
     where.push('(LOWER(m.display_name) LIKE ? OR LOWER(r.order_number) LIKE ?)');
     const q = `%${f.q.toLowerCase()}%`;
@@ -500,6 +502,104 @@ export interface SummaryByMonth {
   count: number;
 }
 
+export interface SubscriptionHealth {
+  total_active: number;
+  total_trial: number;
+  total_cancelled: number;
+  monthly_cost_cents: number;
+  forgotten: { id: number; merchant: string; days_since_last_charge: number; amount_cents: number }[];
+  most_expensive: { id: number; merchant: string; monthly_cost_cents: number }[];
+}
+
+/**
+ * Compute "subscription health": which active subs have not seen a charge
+ * in 1.5x their cycle length (i.e., probably forgotten or quietly
+ * cancelled merchant-side), plus the top-3 most expensive on a per-month
+ * basis.
+ */
+export function getSubscriptionHealth(): SubscriptionHealth {
+  const db = getDb();
+  const subs = db
+    .prepare(
+      `SELECT s.id, s.merchant_id, s.amount_cents, s.currency, s.billing_cycle, s.status,
+              m.display_name as merchant_display_name
+       FROM subscriptions s JOIN merchants m ON m.id = s.merchant_id`,
+    )
+    .all() as {
+    id: number;
+    merchant_id: number;
+    amount_cents: number;
+    currency: string;
+    billing_cycle: SubscriptionRow['billing_cycle'];
+    status: SubscriptionRow['status'];
+    merchant_display_name: string;
+  }[];
+
+  let total_active = 0;
+  let total_trial = 0;
+  let total_cancelled = 0;
+  let monthly_cost_cents = 0;
+
+  // Cycle days helper inlined to avoid a circular import via currency.
+  const days = (c: SubscriptionRow['billing_cycle']) =>
+    c === 'weekly' ? 7 : c === 'monthly' ? 30 : c === 'quarterly' ? 91 : c === 'annually' ? 365 : 30;
+  const monthly = (cents: number, c: SubscriptionRow['billing_cycle']) =>
+    c === 'weekly' ? Math.round(cents * (52 / 12))
+    : c === 'monthly' ? cents
+    : c === 'quarterly' ? Math.round(cents / 3)
+    : c === 'annually' ? Math.round(cents / 12)
+    : cents;
+
+  const forgotten: SubscriptionHealth['forgotten'] = [];
+  const all: { id: number; merchant: string; monthly_cost_cents: number }[] = [];
+
+  for (const s of subs) {
+    if (s.status === 'active') total_active++;
+    else if (s.status === 'trial') total_trial++;
+    else if (s.status === 'cancelled') total_cancelled++;
+
+    if (s.status === 'active' || s.status === 'trial') {
+      monthly_cost_cents += monthly(s.amount_cents, s.billing_cycle);
+      all.push({
+        id: s.id,
+        merchant: s.merchant_display_name,
+        monthly_cost_cents: monthly(s.amount_cents, s.billing_cycle),
+      });
+    }
+
+    if (s.status === 'active') {
+      // forgotten: latest charge older than 1.5x cycle days
+      const latest = db
+        .prepare(
+          'SELECT charge_date FROM subscription_charges WHERE subscription_id = ? ORDER BY charge_date DESC LIMIT 1',
+        )
+        .get(s.id) as { charge_date: number } | undefined;
+      if (latest) {
+        const elapsedDays = Math.floor((Date.now() - latest.charge_date) / (24 * 60 * 60 * 1000));
+        if (elapsedDays > 1.5 * days(s.billing_cycle)) {
+          forgotten.push({
+            id: s.id,
+            merchant: s.merchant_display_name,
+            days_since_last_charge: elapsedDays,
+            amount_cents: s.amount_cents,
+          });
+        }
+      }
+    }
+  }
+
+  all.sort((a, b) => b.monthly_cost_cents - a.monthly_cost_cents);
+
+  return {
+    total_active,
+    total_trial,
+    total_cancelled,
+    monthly_cost_cents,
+    forgotten: forgotten.sort((a, b) => b.days_since_last_charge - a.days_since_last_charge).slice(0, 5),
+    most_expensive: all.slice(0, 3),
+  };
+}
+
 export function getMonthlyTotals(months = 12): SummaryByMonth[] {
   const cutoff = Date.now() - months * 31 * 24 * 60 * 60 * 1000;
   return getDb()
@@ -532,4 +632,135 @@ export function getTopMerchants(limit = 10, days = 365): TopMerchant[] {
        GROUP BY m.id ORDER BY total_cents DESC LIMIT ?`,
     )
     .all(cutoff, limit) as TopMerchant[];
+}
+
+export interface MerchantTimelineEntry {
+  receipt_id: number;
+  email_id: number;
+  date: number;
+  amount_cents: number;
+  currency: string;
+  order_number: string | null;
+}
+
+export interface MerchantTimelineSummary {
+  merchant: MerchantRow;
+  total_cents: number;
+  count: number;
+  first_seen: number | null;
+  last_seen: number | null;
+  monthly: { month: string; total_cents: number; count: number }[];
+  receipts: MerchantTimelineEntry[];
+}
+
+/** Full per-merchant view for the timeline page. */
+export function getMerchantTimeline(merchantId: number): MerchantTimelineSummary | null {
+  const m = getMerchantById(merchantId);
+  if (!m) return null;
+  const db = getDb();
+
+  const agg = db
+    .prepare(
+      `SELECT SUM(total_amount_cents) as total_cents, COUNT(*) as count,
+              MIN(transaction_date) as first_seen, MAX(transaction_date) as last_seen
+       FROM receipts WHERE merchant_id = ?`,
+    )
+    .get(merchantId) as
+    | { total_cents: number | null; count: number; first_seen: number | null; last_seen: number | null }
+    | undefined;
+
+  const monthly = db
+    .prepare(
+      `SELECT strftime('%Y-%m', transaction_date / 1000, 'unixepoch') as month,
+              SUM(total_amount_cents) as total_cents,
+              COUNT(*) as count
+       FROM receipts WHERE merchant_id = ?
+       GROUP BY month ORDER BY month`,
+    )
+    .all(merchantId) as { month: string; total_cents: number; count: number }[];
+
+  const receipts = db
+    .prepare(
+      `SELECT id as receipt_id, email_id, transaction_date as date, total_amount_cents as amount_cents,
+              currency, order_number
+       FROM receipts WHERE merchant_id = ? ORDER BY transaction_date DESC LIMIT 200`,
+    )
+    .all(merchantId) as MerchantTimelineEntry[];
+
+  return {
+    merchant: m,
+    total_cents: agg?.total_cents ?? 0,
+    count: agg?.count ?? 0,
+    first_seen: agg?.first_seen ?? null,
+    last_seen: agg?.last_seen ?? null,
+    monthly,
+    receipts,
+  };
+}
+
+export interface CategoryTotal {
+  category: string | null;
+  total_cents: number;
+  count: number;
+  merchant_count: number;
+}
+
+/** Aggregate receipt totals by merchant.category over the last `days`. */
+export function getCategoryBreakdown(days = 365): CategoryTotal[] {
+  const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+  return getDb()
+    .prepare(
+      `SELECT COALESCE(m.category, 'other') as category,
+              SUM(r.total_amount_cents) as total_cents,
+              COUNT(*) as count,
+              COUNT(DISTINCT m.id) as merchant_count
+       FROM receipts r JOIN merchants m ON m.id = r.merchant_id
+       WHERE r.transaction_date >= ?
+       GROUP BY category ORDER BY total_cents DESC`,
+    )
+    .all(cutoff) as CategoryTotal[];
+}
+
+export interface YearOverYearMonth {
+  month: string; // 'MM'
+  this_year_cents: number;
+  last_year_cents: number;
+}
+
+/** 12-month YoY series: same calendar month this year vs last year. */
+export function getYearOverYear(): YearOverYearMonth[] {
+  // We compute on the SQLite side: for each of the last 13 months (so we
+  // include the current month), grab its receipts, then re-shape into a
+  // 12-row series indexed by month.
+  const now = Date.now();
+  const oneYearMs = 366 * 24 * 60 * 60 * 1000;
+  const twoYearsMs = 2 * 366 * 24 * 60 * 60 * 1000;
+
+  const rows = getDb()
+    .prepare(
+      `SELECT strftime('%Y-%m', transaction_date / 1000, 'unixepoch') as ym,
+              SUM(total_amount_cents) as total_cents
+       FROM receipts WHERE transaction_date >= ?
+       GROUP BY ym ORDER BY ym`,
+    )
+    .all(now - twoYearsMs) as { ym: string; total_cents: number }[];
+
+  const map = new Map(rows.map((r) => [r.ym, r.total_cents]));
+
+  const out: YearOverYearMonth[] = [];
+  const today = new Date(now);
+  for (let i = 11; i >= 0; i--) {
+    const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
+    const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+    const lastYearD = new Date(d.getFullYear() - 1, d.getMonth(), 1);
+    const lastYm = `${lastYearD.getFullYear()}-${String(lastYearD.getMonth() + 1).padStart(2, '0')}`;
+    out.push({
+      month: ym,
+      this_year_cents: map.get(ym) ?? 0,
+      last_year_cents: map.get(lastYm) ?? 0,
+    });
+  }
+  // Mark unused params
+  void oneYearMs;
+  return out;
 }

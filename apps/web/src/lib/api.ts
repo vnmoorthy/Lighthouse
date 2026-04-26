@@ -68,6 +68,17 @@ export interface SummaryResponse {
     open_alerts: number;
   };
   email_processing: Record<string, number>;
+  categories: {
+    category: string;
+    total_cents: number;
+    count: number;
+    merchant_count: number;
+  }[];
+  year_over_year: {
+    month: string;
+    this_year_cents: number;
+    last_year_cents: number;
+  }[];
 }
 
 export interface ReceiptListItem {
@@ -119,6 +130,7 @@ export interface SubscriptionListItem {
 
 export interface SubscriptionDetail extends SubscriptionListItem {
   charges: { id: number; charge_date: number; amount_cents: number; currency: string }[];
+  cancel_link: { url: string; hint?: string } | null;
   proof_email: {
     id: number;
     subject: string | null;
@@ -134,6 +146,15 @@ export interface AlertItem {
   subject_table: string;
   payload: Record<string, unknown>;
   created_at: number;
+}
+
+export interface SubscriptionHealth {
+  total_active: number;
+  total_trial: number;
+  total_cancelled: number;
+  monthly_cost_cents: number;
+  forgotten: { id: number; merchant: string; days_since_last_charge: number; amount_cents: number }[];
+  most_expensive: { id: number; merchant: string; monthly_cost_cents: number }[];
 }
 
 export interface MerchantItem {

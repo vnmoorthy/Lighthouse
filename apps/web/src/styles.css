@@ -155,14 +155,76 @@ body {
   stroke-dasharray: 3 3;
 }
 
-/* Light mode (auto): a tasteful cream theme inspired by Anthropic */
+/* ---- Print stylesheet ---- */
+/* When the user picks "Print" in a receipt modal, the body gets the
+   `lh-printing` class. We hide everything except the receipt itself,
+   then revert when printing finishes. */
+@media print {
+  body.lh-printing > * { display: none !important; }
+  body.lh-printing .lh-print-target {
+    display: block !important;
+    background: #fff !important;
+    color: #1c1c19 !important;
+    padding: 32px;
+  }
+  body.lh-printing .lh-print-target * {
+    color: inherit !important;
+    background: transparent !important;
+    border-color: #d8d2c4 !important;
+    box-shadow: none !important;
+  }
+}
+.lh-print-target { display: none; }
+body.lh-printing .lh-print-target { display: block; }
+
+/* ---- Light theme ---- */
+/* Triggered when the user picks 'light' in Settings, OR by their OS
+   preference if they haven't picked anything. The manual override on
+   <html data-theme="dark|light"> wins over the media query so users
+   can stay on dark even on a light-mode OS. */
+:root[data-theme='light'],
+:root:not([data-theme]) {
+  /* defaults are dark; light is opt-in below */
+}
+
 @media (prefers-color-scheme: light) {
-  html, body, #root {
-    background: #f8f5ef;
+  :root:not([data-theme='dark']) {
+    color-scheme: light;
+  }
+  :root:not([data-theme='dark']) body {
+    background: #faf7f1;
     color: #2a2622;
   }
-  ::selection {
-    background: rgba(216, 118, 66, 0.25);
-    color: #2a2622;
-  }
+}
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+:root[data-theme='light'] body {
+  background: #faf7f1;
+  color: #2a2622;
+}
+:root[data-theme='light'] .lh-page-bg {
+  background:
+    radial-gradient(circle at 80% -10%, rgba(216, 118, 66, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 0% 0%, rgba(124, 193, 233, 0.05) 0%, transparent 40%);
+  background-color: #faf7f1;
+}
+:root[data-theme='light'] .lh-card,
+:root[data-theme='light'] .lh-card-elev {
+  background: #fff;
+  border-color: #ebe4d6;
+  box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.02), 0 4px 12px -8px rgba(0, 0, 0, 0.08);
+}
+:root[data-theme='light'] .lh-input,
+:root[data-theme='light'] .lh-select {
+  background: #fff;
+  border-color: #ebe4d6;
+  color: #2a2622;
+}
+:root[data-theme='light'] aside {
+  background: #f3eee2;
+  border-color: #ebe4d6;
+}
+::selection {
+  background: rgba(229, 142, 90, 0.35);
 }

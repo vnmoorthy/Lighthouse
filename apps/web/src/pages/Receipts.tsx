@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSearchParams, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import {
   api,
@@ -10,12 +11,22 @@ import PageHeader from '../components/PageHeader';
 import MerchantBadge from '../components/MerchantBadge';
 import EmailViewer from '../components/EmailViewer';
 import Modal from '../components/Modal';
+import { CATEGORY_LABEL } from '../components/CategoryBreakdown';
 import { fmtDate, fmtMoney } from '../lib/format';
-import { Search, ChevronRight } from 'lucide-react';
+import { Search, ChevronRight, X, Printer } from 'lucide-react';
 
 export default function ReceiptsPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [query, setQuery] = useState('');
   const [merchant, setMerchant] = useState<string>('');
+  const category = searchParams.get('category') ?? '';
+  const setCategory = (c: string) => {
+    const next = new URLSearchParams(searchParams);
+    if (c) next.set('category', c);
+    else next.delete('category');
+    setSearchParams(next);
+    setOffset(0);
+  };
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [limit] = useState(50);
@@ -30,6 +41,7 @@ export default function ReceiptsPage() {
   const params = new URLSearchParams();
   if (query) params.set('q', query);
   if (merchant) params.set('merchant', merchant);
+  if (category) params.set('category', category);
   if (from) params.set('from', String(new Date(from).getTime()));
   if (to) params.set('to', String(new Date(to).getTime()));
   params.set('limit', String(limit));
@@ -82,6 +94,26 @@ export default function ReceiptsPage() {
               </option>
             ))}
           </select>
+          <select
+            className="lh-select"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          >
+            <option value="">All categories</option>
+            {Object.entries(CATEGORY_LABEL).map(([key, label]) => (
+              <option key={key} value={key}>{label}</option>
+            ))}
+          </select>
+          {category ? (
+            <button
+              type="button"
+              onClick={() => setCategory('')}
+              className="lh-btn-ghost text-2xs"
+              title="Clear category filter"
+            >
+              <X size={12} /> {CATEGORY_LABEL[category] ?? category}
+            </button>
+          ) : null}
           <input
             type="date"
             className="lh-input"
@@ -154,7 +186,13 @@ export default function ReceiptsPage() {
                     <td className="px-4 py-3.5">
                       <div className="flex items-center gap-2.5">
                         <MerchantBadge name={r.merchant_display_name} size="sm" />
-                        <span className="text-lh-fore">{r.merchant_display_name}</span>
+                        <Link
+                          to={`/merchants/${r.merchant_id}`}
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-lh-fore hover:text-lh-coral transition-colors"
+                        >
+                          {r.merchant_display_name}
+                        </Link>
                       </div>
                     </td>
                     <td className="px-4 py-3.5 text-lh-mute font-mono text-xs">
@@ -231,6 +269,16 @@ function ReceiptModal({ id, onClose }: { id: number | null; onClose: () => void 
     enabled: id != null,
   });
 
+  function printReceipt() {
+    document.body.classList.add('lh-printing');
+    const off = () => {
+      document.body.classList.remove('lh-printing');
+      window.removeEventListener('afterprint', off);
+    };
+    window.addEventListener('afterprint', off);
+    setTimeout(() => window.print(), 80);
+  }
+
   return (
     <Modal
       open={id != null}
@@ -238,6 +286,14 @@ function ReceiptModal({ id, onClose }: { id: number | null; onClose: () => void 
       title="Receipt"
       description="The structured fields the LLM extracted from the original email."
       width="max-w-3xl"
+      footer={
+        q.data ? (
+          <button type="button" className="lh-btn" onClick={printReceipt}>
+            <Printer size={14} />
+            Print / Save as PDF
+          </button>
+        ) : undefined
+      }
     >
       {q.isLoading ? (
         <div className="space-y-3">
@@ -247,7 +303,44 @@ function ReceiptModal({ id, onClose }: { id: number | null; onClose: () => void 
       ) : !q.data ? (
         <div className="text-sm text-lh-mute">Receipt not found.</div>
       ) : (
-        <div className="space-y-5">
+        <>
+          {/* Hidden until printed — clean printable version */}
+          <div className="lh-print-target">
+            <div style={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: 14, lineHeight: 1.4 }}>
+              <h1 style={{ fontSize: 22, marginBottom: 4 }}>{q.data.merchant_display_name}</h1>
+              <div style={{ color: '#666', marginBottom: 24 }}>
+                {fmtDate(q.data.transaction_date)} · {q.data.order_number ?? '—'}
+              </div>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <tbody>
+                  {(q.data.line_items ?? []).map((li, i) => (
+                    <tr key={i} style={{ borderBottom: '1px solid #eee' }}>
+                      <td style={{ padding: '8px 0' }}>
+                        {li.quantity ? `${li.quantity}× ` : ''}{li.description}
+                      </td>
+                      <td style={{ padding: '8px 0', textAlign: 'right' }}>
+                        {li.total_cents != null ? fmtMoney(li.total_cents, q.data!.currency) : '—'}
+                      </td>
+                    </tr>
+                  ))}
+                  <tr style={{ borderTop: '2px solid #1c1c19', fontWeight: 600 }}>
+                    <td style={{ padding: '12px 0' }}>Total</td>
+                    <td style={{ padding: '12px 0', textAlign: 'right' }}>
+                      {fmtMoney(q.data.total_amount_cents, q.data.currency)}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <div style={{ marginTop: 24, color: '#666', fontSize: 12 }}>
+                Payment: {q.data.payment_method ?? '—'}
+              </div>
+              <div style={{ marginTop: 36, color: '#999', fontSize: 11 }}>
+                Generated by Lighthouse from your inbox · localhost-only · {new Date().toISOString().slice(0, 10)}
+              </div>
+            </div>
+          </div>
+
+        <div className="space-y-5 lh-no-print">
           <div className="flex items-center gap-3">
             <MerchantBadge name={q.data.merchant_display_name} size="lg" ring />
             <div className="flex-1 min-w-0">
@@ -290,6 +383,7 @@ function ReceiptModal({ id, onClose }: { id: number | null; onClose: () => void 
             <EmailViewer emailId={q.data.email_id} />
           </div>
         </div>
+        </>
       )}
     </Modal>
   );

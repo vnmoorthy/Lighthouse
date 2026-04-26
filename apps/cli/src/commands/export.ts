@@ -9,6 +9,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import {
   getDb,
+  getMerchantById,
   listReceipts,
   listSubscriptions,
   listChargesForSubscription,
@@ -17,6 +18,7 @@ import {
 
 interface ExportOpts {
   out: string;
+  taxOnly?: boolean;
 }
 
 function escapeCsv(s: string): string {
@@ -24,15 +26,34 @@ function escapeCsv(s: string): string {
   return s;
 }
 
+// IRS-friendly business categories. Anything outside is excluded when
+// --tax-only is passed. (Calibrated for US Schedule C / typical sole
+// proprietor categories; international users should adjust.)
+const TAX_DEDUCTIBLE_CATEGORIES = new Set([
+  'developer',
+  'cloud',
+  'productivity',
+  'utilities',
+  'travel',
+  'transit',
+  'apps',
+]);
+
 export async function exportCommand(opts: ExportOpts): Promise<void> {
   getDb();
   const dir = resolve(opts.out);
   mkdirSync(dir, { recursive: true });
 
-  // Receipts CSV.
+  // Receipts CSV with category column for tax export use.
   const allReceipts = listReceipts({ limit: 100_000 }).rows;
-  const csvLines = ['date,merchant,total,currency,order_number,payment_method,confidence,line_items'];
+  const csvLines = [
+    'date,merchant,category,total,currency,order_number,payment_method,confidence,line_items',
+  ];
+  let included = 0;
   for (const r of allReceipts) {
+    const merchant = getMerchantById(r.merchant_id);
+    const category = merchant?.category ?? 'other';
+    if (opts.taxOnly && !TAX_DEDUCTIBLE_CATEGORIES.has(category)) continue;
     const date = new Date(r.transaction_date).toISOString().slice(0, 10);
     const total = (r.total_amount_cents / 100).toFixed(2);
     const items = r.line_items_json ?? '';
@@ -40,6 +61,7 @@ export async function exportCommand(opts: ExportOpts): Promise<void> {
       [
         date,
         escapeCsv(r.merchant_display_name),
+        category,
         total,
         r.currency,
         escapeCsv(r.order_number ?? ''),
@@ -48,8 +70,9 @@ export async function exportCommand(opts: ExportOpts): Promise<void> {
         escapeCsv(items),
       ].join(','),
     );
+    included++;
   }
-  const csvPath = join(dir, 'receipts.csv');
+  const csvPath = join(dir, opts.taxOnly ? 'receipts-tax.csv' : 'receipts.csv');
   writeFileSync(csvPath, csvLines.join('\n'));
 
   // Subscriptions JSON.
@@ -77,6 +100,6 @@ export async function exportCommand(opts: ExportOpts): Promise<void> {
   writeFileSync(jsonPath, JSON.stringify(subs, null, 2));
 
   console.log(chalk.green('✓ Export complete.'));
-  console.log(chalk.gray(`  ${csvPath}    ${allReceipts.length} receipts`));
+  console.log(chalk.gray(`  ${csvPath}    ${included} receipts${opts.taxOnly ? ' (tax-deductible only)' : ''}`));
   console.log(chalk.gray(`  ${jsonPath}   ${subs.length} subscriptions`));
 }

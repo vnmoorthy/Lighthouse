@@ -1,5 +1,58 @@
 # Changelog
 
+## 0.10.0 — six-iteration feature push (April 2026)
+
+A single push containing six significant feature additions, each pulled from
+something a competitor product (Rocket Money, Bobby, Truebill, Copilot,
+Cushion) does well and that Lighthouse was missing.
+
+**v0.5 — Categories everywhere**
+- New `getCategoryBreakdown` and `getYearOverYear` queries on the API.
+- Donut chart on Overview with hover-to-isolate and click-to-filter.
+- Category dropdown filter on Receipts.
+- A clean 15-category taxonomy mirroring `merchant_rules.ts`.
+
+**v0.6 — Cancellation deep-links + Subscription Health**
+- Hand-curated `CANCEL_LINKS` for ~50 top merchants (Netflix, Spotify, Apple,
+  GitHub, Notion, NYTimes, AT&T, …). Each subscription drawer now exposes a
+  one-click "Open cancel page" button when a link is known.
+- Subscription Health panel on /subscriptions: monthly run rate, top 3 most
+  expensive, "possibly forgotten" subs (active but no charge in >1.5x cycle).
+
+**v0.7 — Command palette (⌘K)**
+- New global `CommandPalette` reachable via ⌘K. Searches across pages,
+  categories, merchants, subscriptions, receipts. Keyboard nav (↑/↓/↵/esc).
+  Sidebar shows the keyboard shortcut.
+
+**v0.8 — Year-over-Year + per-merchant timeline**
+- YoY card on Overview: 12-month rolling spend split into "this year" vs
+  "last year" bars, with a 12-month change percentage.
+- New /merchants/:id page: hero KPIs (total spent, count, avg/month, most
+  recent), monthly bar chart, full receipt list. Clicking a merchant name
+  on the Receipts table jumps here.
+
+**v0.9 — Mobile + theme toggle + trial banner**
+- Sidebar collapses behind a hamburger on screens narrower than `lg`. Slide-in
+  drawer with backdrop. Auto-closes on route change.
+- Theme toggle in Settings (System / Dark / Light). Persisted to localStorage,
+  bootstrap-applied before first paint.
+- Persistent amber trial banner across the top when any active trial is
+  ending in ≤14 days.
+
+**v0.10 — Refund detection + tax CSV + printable receipts**
+- New `refund` classifier bucket. Refund emails create a receipt with a
+  *negative* amount so totals net out cleanly.
+- `npm run export -- --tax-only` filters the receipts CSV to a hand-picked
+  list of business-deductible categories (developer, cloud, productivity,
+  utilities, travel, transit, apps).
+- Receipt modal now has a "Print / Save as PDF" button. Uses a print
+  stylesheet that hides the dashboard chrome and renders a clean,
+  accountant-friendly receipt at print time.
+
+**Other**
+- Sidebar version: 0.4.0 → 0.10.0.
+- README badge color & version bumped.
+
 ## 0.4.0 — design-system overhaul (April 2026)
 
 A full pass through the dashboard for visual sophistication: tighter type

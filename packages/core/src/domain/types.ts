@@ -10,6 +10,7 @@ export type ProcessedStatus = 'pending' | 'classified' | 'done' | 'error' | 'ski
 
 export type EmailClass =
   | 'receipt'
+  | 'refund'
   | 'subscription_signup'
   | 'subscription_renewal'
   | 'subscription_cancellation'

@@ -5,13 +5,14 @@ import {
   api,
   apiPost,
   type SubscriptionDetail,
+  type SubscriptionHealth,
   type SubscriptionListItem,
 } from '../lib/api';
 import PageHeader from '../components/PageHeader';
 import MerchantBadge from '../components/MerchantBadge';
 import EmailViewer from '../components/EmailViewer';
 import { fmtDate, fmtMoney } from '../lib/format';
-import { CheckCheck, X, ChevronRight } from 'lucide-react';
+import { CheckCheck, X, ChevronRight, ExternalLink } from 'lucide-react';
 
 const STATUS_TABS: { key: 'all' | 'active' | 'trial' | 'cancelled'; label: string }[] = [
   { key: 'all', label: 'All' },
@@ -71,7 +72,9 @@ export default function SubscriptionsPage() {
           </div>
         }
       />
-      <div className="p-8">
+      <div className="p-8 space-y-6">
+        <HealthPanel />
+
         <div className="lh-card overflow-hidden">
           <table className="w-full">
             <thead className="lh-eyebrow border-b border-lh-line/60">
@@ -248,18 +251,38 @@ function SubscriptionDrawer({ id, onClose }: { id: number | null; onClose: () =>
                 <EmailViewer emailId={q.data.last_seen_email_id} />
               </div>
 
-              <div className="flex justify-end gap-2 pt-2">
-                {q.data.status !== 'cancelled' ? (
-                  <button
-                    type="button"
-                    className="lh-btn"
-                    onClick={() => cancel.mutate()}
-                    disabled={cancel.isPending}
-                  >
-                    <CheckCheck size={14} />
-                    Mark cancelled
-                  </button>
-                ) : null}
+              <div className="flex justify-between items-center gap-2 pt-2">
+                <div className="text-2xs text-lh-mute">
+                  {q.data.cancel_link ? (
+                    <>Lighthouse knows where to cancel this one.</>
+                  ) : (
+                    <>No curated cancel link yet for this merchant.</>
+                  )}
+                </div>
+                <div className="flex gap-2">
+                  {q.data.cancel_link ? (
+                    <a
+                      href={q.data.cancel_link.url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="lh-btn-primary"
+                    >
+                      <ExternalLink size={14} />
+                      Open cancel page
+                    </a>
+                  ) : null}
+                  {q.data.status !== 'cancelled' ? (
+                    <button
+                      type="button"
+                      className="lh-btn"
+                      onClick={() => cancel.mutate()}
+                      disabled={cancel.isPending}
+                    >
+                      <CheckCheck size={14} />
+                      Mark cancelled
+                    </button>
+                  ) : null}
+                </div>
               </div>
             </>
           )}
@@ -274,6 +297,67 @@ function Stat({ label, value }: { label: string; value: string }) {
     <div className="lh-card p-3.5">
       <div className="lh-eyebrow text-[10px]">{label}</div>
       <div className="text-sm font-semibold mt-1 text-lh-fore lh-num">{value}</div>
+    </div>
+  );
+}
+
+function HealthPanel() {
+  const q = useQuery({
+    queryKey: ['subscription-health'],
+    queryFn: () => api<SubscriptionHealth>('/api/subscriptions-health'),
+  });
+  if (q.isLoading || !q.data) return null;
+  const h = q.data;
+  if (h.total_active === 0 && h.total_trial === 0) return null;
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="lh-card p-5">
+        <div className="lh-eyebrow">Monthly run rate</div>
+        <div className="text-2xl font-semibold mt-1.5 lh-num text-lh-fore">
+          {fmtMoney(h.monthly_cost_cents)}
+        </div>
+        <div className="text-xs text-lh-mute mt-1">
+          {h.total_active} active · {h.total_trial} trial · {h.total_cancelled} cancelled
+        </div>
+      </div>
+
+      <div className="lh-card p-5">
+        <div className="lh-eyebrow">Most expensive</div>
+        <div className="space-y-1.5 mt-2">
+          {h.most_expensive.map((m) => (
+            <div key={m.id} className="flex items-center justify-between text-sm">
+              <span className="text-lh-fore truncate mr-2">{m.merchant}</span>
+              <span className="text-lh-mute lh-num text-xs">{fmtMoney(m.monthly_cost_cents)}/mo</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="lh-card p-5">
+        <div className="flex items-center justify-between">
+          <div className="lh-eyebrow">Possibly forgotten</div>
+          {h.forgotten.length > 0 ? (
+            <span className="lh-pill bg-amber-500/10 text-amber-300 border-amber-500/20">
+              {h.forgotten.length}
+            </span>
+          ) : null}
+        </div>
+        {h.forgotten.length === 0 ? (
+          <div className="text-xs text-lh-mute mt-2">No active subs are missing a recent charge.</div>
+        ) : (
+          <div className="space-y-1.5 mt-2">
+            {h.forgotten.slice(0, 3).map((f) => (
+              <div key={f.id} className="flex items-center justify-between text-sm">
+                <span className="text-lh-fore truncate mr-2">{f.merchant}</span>
+                <span className="text-amber-300 lh-num text-xs whitespace-nowrap">
+                  {f.days_since_last_charge}d quiet
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

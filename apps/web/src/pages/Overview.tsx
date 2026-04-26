@@ -4,6 +4,7 @@ import PageHeader from '../components/PageHeader';
 import KpiCard from '../components/KpiCard';
 import SpendChart from '../components/SpendChart';
 import TopMerchantsBar from '../components/TopMerchantsBar';
+import CategoryBreakdown from '../components/CategoryBreakdown';
 import AlertsList from '../components/AlertsList';
 import { fmtMoney } from '../lib/format';
 import { Wallet, Repeat, BellRing, TrendingUp } from 'lucide-react';
@@ -11,6 +12,72 @@ import { Wallet, Repeat, BellRing, TrendingUp } from 'lucide-react';
 function pct(curr: number, prev: number): number {
   if (!prev) return 0;
   return ((curr - prev) / prev) * 100;
+}
+
+function YoYCard({
+  yoy,
+}: {
+  yoy: { month: string; this_year_cents: number; last_year_cents: number }[];
+}) {
+  if (!yoy || yoy.length === 0) return null;
+  const totalThis = yoy.reduce((acc, m) => acc + m.this_year_cents, 0);
+  const totalLast = yoy.reduce((acc, m) => acc + m.last_year_cents, 0);
+  const delta = pct(totalThis, totalLast);
+  const isUp = delta > 0;
+  // Bar chart inline using divs, two-bar comparison per month.
+  const max = Math.max(...yoy.flatMap((m) => [m.this_year_cents, m.last_year_cents]));
+
+  return (
+    <div className="lh-card p-5 h-[340px] flex flex-col">
+      <div className="flex items-end justify-between mb-3">
+        <div>
+          <div className="lh-eyebrow">Year over year</div>
+          <div className="text-base font-semibold mt-1 text-lh-fore">12-month rolling spend</div>
+        </div>
+        <div className="text-right">
+          <div className="lh-eyebrow text-[10px]">12-mo change</div>
+          <div
+            className={`lh-num text-base font-semibold mt-0.5 ${isUp ? 'text-lh-rose' : 'text-lh-mint'}`}
+          >
+            {isUp ? '+' : ''}
+            {delta.toFixed(1)}%
+          </div>
+        </div>
+      </div>
+      <div className="flex-1 flex items-end gap-1 overflow-hidden">
+        {yoy.map((m) => {
+          const tHeight = max > 0 ? (m.this_year_cents / max) * 100 : 0;
+          const lHeight = max > 0 ? (m.last_year_cents / max) * 100 : 0;
+          const label = m.month.slice(5); // 'MM'
+          return (
+            <div key={m.month} className="flex-1 flex flex-col items-center gap-1 group min-w-0">
+              <div className="flex items-end justify-center gap-0.5 h-full w-full">
+                <div
+                  className="flex-1 rounded-t-sm bg-lh-line2/60 group-hover:bg-lh-line2 transition-colors"
+                  style={{ height: `${lHeight}%` }}
+                  title={`Last yr · ${m.month}`}
+                />
+                <div
+                  className="flex-1 rounded-t-sm bg-gradient-to-t from-lh-coral to-lh-gold group-hover:from-lh-coralDeep transition-colors"
+                  style={{ height: `${tHeight}%` }}
+                  title={`This yr · ${m.month}`}
+                />
+              </div>
+              <div className="text-[9px] text-lh-mute lh-num">{label}</div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="flex items-center gap-3 text-2xs text-lh-mute mt-2">
+        <span className="flex items-center gap-1">
+          <span className="w-2 h-2 rounded-sm bg-gradient-to-t from-lh-coral to-lh-gold" /> This year
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="w-2 h-2 rounded-sm bg-lh-line2" /> Last year
+        </span>
+      </div>
+    </div>
+  );
 }
 
 export default function OverviewPage() {
@@ -104,6 +171,16 @@ export default function OverviewPage() {
           </div>
           <div>
             <TopMerchantsBar data={summary.data.top_merchants} />
+          </div>
+        </div>
+
+        {/* Category breakdown + summary */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2">
+            <CategoryBreakdown data={summary.data.categories} />
+          </div>
+          <div>
+            <YoYCard yoy={summary.data.year_over_year} />
           </div>
         </div>
 

@@ -4,3 +4,4 @@ export * from './merchant_rules.js';
 export * from './dedupe.js';
 export * from './alerts.js';
 export * from './currency.js';
+export * from './cancel_links.js';

@@ -86,6 +86,11 @@ program
   .command('export')
   .description('Export receipts (CSV) and subscriptions (JSON) to disk.')
   .option('-o, --out <dir>', 'Output directory.', './lighthouse-export')
+  .option(
+    '--tax-only',
+    'Restrict CSV to merchants in business-deductible categories.',
+    false,
+  )
   .action(async (opts) => {
     try {
       await exportCommand(opts);
