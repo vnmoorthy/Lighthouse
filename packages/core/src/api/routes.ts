@@ -253,11 +253,71 @@ export function registerRoutes(app: FastifyInstance): void {
 
   app.get('/api/patterns', async () => getSpendingPatterns());
 
+  // --- Forwarded-email ingest -----------------------------------------
+  // POST a raw email body (or just the plaintext) and the pipeline runs
+  // it through classify+extract synchronously. Useful for non-Gmail
+  // accounts (Outlook, Yahoo, iCloud) where the user can set up a
+  // forwarding rule to a local handler.
+  app.post(
+    '/api/ingest/email',
+    async (
+      req: FastifyRequest<{
+        Body: {
+          from: string;
+          subject?: string;
+          body_text?: string;
+          body_html?: string;
+          internal_date?: number;
+        };
+      }>,
+      reply,
+    ) => {
+      const { from, subject, body_text, body_html, internal_date } = req.body ?? {} as Record<string, unknown> as {
+        from: string;
+        subject?: string;
+        body_text?: string;
+        body_html?: string;
+        internal_date?: number;
+      };
+      if (!from) return reply.code(400).send({ error: 'missing_from' });
+      if (!body_text && !body_html) {
+        return reply.code(400).send({ error: 'missing_body' });
+      }
+      const { ingestForwardedEmail } = await import('../pipeline/ingest_forwarded.js');
+      try {
+        const out = await ingestForwardedEmail({
+          from,
+          subject: subject ?? null,
+          body_text: body_text ?? null,
+          body_html: body_html ?? null,
+          internal_date: internal_date ?? Date.now(),
+        });
+        return out;
+      } catch (e) {
+        return reply.code(500).send({ error: 'ingest_failed', message: (e as Error).message });
+      }
+    },
+  );
+
   // --- Accounts -------------------------------------------------------
   app.get('/api/accounts', async () => {
     const { listAccounts } = await import('../db/accounts.js');
     return { accounts: listAccounts() };
   });
+
+  // --- Notifications --------------------------------------------------
+  app.get('/api/notifications', async () => {
+    const { notificationsEnabled } = await import('../domain/notifications.js');
+    return { enabled: notificationsEnabled() };
+  });
+  app.post(
+    '/api/notifications',
+    async (req: FastifyRequest<{ Body: { enabled: boolean } }>) => {
+      const { setNotificationsEnabled } = await import('../domain/notifications.js');
+      setNotificationsEnabled(Boolean(req.body?.enabled));
+      return { ok: true };
+    },
+  );
 
   // --- Webhook --------------------------------------------------------
   app.get('/api/webhook', async () => {

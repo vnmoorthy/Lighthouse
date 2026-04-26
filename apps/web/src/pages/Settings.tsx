@@ -27,6 +27,7 @@ import CustomAlertsCard from '../components/CustomAlertsCard';
 import { BudgetsEdit } from '../components/BudgetsCard';
 import AccountsCard from '../components/AccountsCard';
 import WebhookCard from '../components/WebhookCard';
+import NotificationsToggle from '../components/NotificationsToggle';
 
 export default function SettingsPage() {
   const qc = useQueryClient();
@@ -144,6 +145,14 @@ export default function SettingsPage() {
               description="Set a monthly cap per category. We'll alert you when you cross 80%."
             >
               <BudgetsEdit />
+            </SectionCard>
+
+            {/* Notifications */}
+            <SectionCard
+              title="Notifications"
+              description="Get a native OS toast every time a new alert fires."
+            >
+              <NotificationsToggle />
             </SectionCard>
 
             {/* Webhooks */}

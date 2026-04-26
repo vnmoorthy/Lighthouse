@@ -9,3 +9,4 @@ export * from './insights.js';
 export * from './custom_alerts.js';
 export * from './budgets.js';
 export * from './webhooks.js';
+export * from './notifications.js';

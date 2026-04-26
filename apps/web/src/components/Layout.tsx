@@ -16,6 +16,7 @@ import {
   ShieldCheck,
   Menu,
   X,
+  Eye,
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { api, type SummaryResponse } from '../lib/api';
@@ -40,7 +41,10 @@ const NAV_GROUPS: {
   },
   {
     label: 'System',
-    items: [{ to: '/settings', icon: Settings, label: 'Settings' }],
+    items: [
+      { to: '/settings', icon: Settings, label: 'Settings' },
+      { to: '/privacy', icon: Eye, label: 'Privacy' },
+    ],
   },
 ];
 
@@ -97,7 +101,7 @@ export default function Layout() {
             </div>
             <div>
               <div className="text-[15px] font-semibold tracking-tightest leading-none">Lighthouse</div>
-              <div className="text-2xs text-lh-mute mt-0.5 tabular-nums">v0.21.0 · local</div>
+              <div className="text-2xs text-lh-mute mt-0.5 tabular-nums">v0.25.0 · local</div>
             </div>
           </div>
         </div>

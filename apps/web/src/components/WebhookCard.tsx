@@ -1,7 +1,8 @@
 /**
- * Webhook Settings widget. Lets the user point alerts at any HTTPS URL.
- * "Test" sends a synthetic payload so you can verify the integration
- * without waiting for a real alert.
+ * Webhook + native notifications widget.
+ *
+ * One file because they share the same "alerts pipeline" mental model:
+ * webhook = arbitrary URL, native = OS toast.
  */
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';

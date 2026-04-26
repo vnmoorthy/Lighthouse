@@ -443,8 +443,20 @@ export function insertAlert(a: {
        VALUES (?,?,?,?,?)`,
     )
     .run(a.type, a.subject_id, a.subject_table, JSON.stringify(a.payload), now);
-  // Fire-and-forget webhook dispatch. Lazy-loaded to dodge circular import
-  // through the domain index.
+  // Fire-and-forget webhook + native notification. Lazy-loaded to dodge
+  // a circular import through the domain index.
+  const payload = a.payload as Record<string, unknown> | null;
+  const merchantHint =
+    payload && typeof payload === 'object' && payload['merchant']
+      ? String(payload['merchant'])
+      : null;
+  const titleByType: Record<string, string> = {
+    trial_ending: 'Trial ending',
+    price_increase: 'Price change',
+    new_subscription: 'New subscription',
+    duplicate_charge: 'Duplicate charge',
+    custom: 'Custom alert',
+  };
   void import('../domain/webhooks.js')
     .then(({ dispatchWebhook }) =>
       dispatchWebhook({
@@ -455,8 +467,18 @@ export function insertAlert(a: {
         payload: a.payload,
         created_at: now,
         source: 'lighthouse',
-        version: '0.21.0',
+        version: '0.25.0',
       }),
+    )
+    .catch(() => {
+      /* non-fatal */
+    });
+  void import('../domain/notifications.js')
+    .then(({ notify }) =>
+      notify(
+        titleByType[a.type] ?? a.type,
+        merchantHint ?? `${a.subject_table} #${a.subject_id}`,
+      ),
     )
     .catch(() => {
       /* non-fatal */

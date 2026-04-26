@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.25.0 — onboarding, money-flow, forwarded email, native notifications (April 2026)
+
+**v0.22 — Onboarding wizard + privacy report**
+- New `OnboardingWizard` modal that auto-shows for first-time users (zero
+  receipts in DB, not previously dismissed). Three steps: intro, connect
+  Gmail, run first sync. Persisted dismissal in localStorage.
+- New `/privacy` page: a deliberately blunt rundown of every piece of data
+  Lighthouse stores, every external call, every place a secret lives.
+
+**v0.23 — Money-flow visualisation**
+- New `MoneyFlowSankey` component: custom SVG ribbon chart from category →
+  top merchants. Computed entirely from existing `/api/summary` data.
+
+**v0.24 — Forwarded-email ingest (non-Gmail support)**
+- New `pipeline/ingest_forwarded.ts`: synchronous classify + extract for a
+  single email payload. POSTed to `/api/ingest/email` it accepts
+  `{ from, subject, body_text, body_html, internal_date }` and runs the
+  same classifier + receipt/subscription extractors as bulk sync.
+- Use cases: Outlook / Yahoo / iCloud users with a "forward to webhook"
+  rule, or Apple Shortcuts piping a single message in.
+
+**v0.25 — Native OS notifications**
+- New `domain/notifications.ts`. macOS toast via `osascript -e 'display
+  notification …'`; Linux via `notify-send`. Windows is a no-op.
+- Disabled by default. Toggle in Settings via `NotificationsToggle`.
+- Hooked into `insertAlert()` so every fresh alert gets a system toast
+  in addition to the webhook + dashboard.
+
 ## 0.21.0 — patterns, multi-account, webhooks (April 2026)
 
 **v0.19 — Spending patterns**

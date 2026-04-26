@@ -7,6 +7,7 @@ import TopMerchantsBar from '../components/TopMerchantsBar';
 import CategoryBreakdown from '../components/CategoryBreakdown';
 import { BudgetsDisplay } from '../components/BudgetsCard';
 import SpendingPatterns from '../components/SpendingPatterns';
+import MoneyFlowSankey from '../components/MoneyFlowSankey';
 import InsightsRow from '../components/InsightsRow';
 import AlertsList from '../components/AlertsList';
 import { fmtMoney } from '../lib/format';
@@ -199,6 +200,9 @@ export default function OverviewPage() {
             <SpendingPatterns />
           </div>
         </div>
+
+        {/* Money flow sankey */}
+        <MoneyFlowSankey />
 
         {/* Alerts + inbox health */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
