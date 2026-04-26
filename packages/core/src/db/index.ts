@@ -43,3 +43,4 @@ export function tx<T>(fn: (db: Database.Database) => T): T {
 
 export * from './queries.js';
 export * from './kv.js';
+export * from './accounts.js';

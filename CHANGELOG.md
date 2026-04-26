@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.21.0 — patterns, multi-account, webhooks (April 2026)
+
+**v0.19 — Spending patterns**
+- New `getSpendingPatterns()` query: receipts grouped by day-of-week
+  and hour-of-day over the last 365 days.
+- `SpendingPatterns` component on Overview: 7-bar weekday chart +
+  24-cell hour heat strip, both highlighting the peak bucket.
+
+**v0.20 — Multi-account foundation**
+- New `accounts` table + `0005_multi_account.sql` migration. Existing
+  installs get a default "Personal" account seeded from current kv
+  values; emails/receipts gain an `account_id` column defaulting to 1.
+- `db/accounts.ts` ships listAccounts / getDefaultAccount / createAccount.
+- `/api/accounts` + `AccountsCard` widget in Settings.
+
+**v0.21 — Webhooks**
+- New `domain/webhooks.ts`. Configure one URL in Settings. Every alert
+  POSTs a stable JSON payload: `{ type, alert_type, subject_table,
+  subject_id, payload, created_at, source, version }`. Fire-and-forget
+  with a 5s timeout. Failures are logged but never block sync.
+- `WebhookCard` in Settings with Save + Send-test buttons.
+
 ## 0.18.0 — tags, budgets, iCal feed, weekly digest (April 2026)
 
 **v0.15 — Tags**

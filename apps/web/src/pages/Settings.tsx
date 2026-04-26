@@ -25,6 +25,8 @@ import {
 import { useTheme, type Theme } from '../lib/theme';
 import CustomAlertsCard from '../components/CustomAlertsCard';
 import { BudgetsEdit } from '../components/BudgetsCard';
+import AccountsCard from '../components/AccountsCard';
+import WebhookCard from '../components/WebhookCard';
 
 export default function SettingsPage() {
   const qc = useQueryClient();
@@ -96,6 +98,14 @@ export default function SettingsPage() {
               />
             </SectionCard>
 
+            {/* Connected accounts */}
+            <SectionCard
+              title="Connected accounts"
+              description="Gmail inboxes Lighthouse reads from. Each one is end-to-end isolated in the database."
+            >
+              <AccountsCard />
+            </SectionCard>
+
             {/* Appearance */}
             <SectionCard
               title="Appearance"
@@ -134,6 +144,14 @@ export default function SettingsPage() {
               description="Set a monthly cap per category. We'll alert you when you cross 80%."
             >
               <BudgetsEdit />
+            </SectionCard>
+
+            {/* Webhooks */}
+            <SectionCard
+              title="Webhooks"
+              description="Forward every alert to a URL of your choice — Slack incoming webhook, ntfy topic, Pushover, your own server."
+            >
+              <WebhookCard />
             </SectionCard>
 
             {/* Custom alerts */}

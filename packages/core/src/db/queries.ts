@@ -436,12 +436,31 @@ export function insertAlert(a: {
     )
     .get(a.type, a.subject_id, a.subject_table, cutoff) as { id: number } | undefined;
   if (dup) return null;
+  const now = Date.now();
   const r = getDb()
     .prepare(
       `INSERT INTO alerts (type, subject_id, subject_table, payload_json, created_at)
        VALUES (?,?,?,?,?)`,
     )
-    .run(a.type, a.subject_id, a.subject_table, JSON.stringify(a.payload), Date.now());
+    .run(a.type, a.subject_id, a.subject_table, JSON.stringify(a.payload), now);
+  // Fire-and-forget webhook dispatch. Lazy-loaded to dodge circular import
+  // through the domain index.
+  void import('../domain/webhooks.js')
+    .then(({ dispatchWebhook }) =>
+      dispatchWebhook({
+        type: 'alert',
+        alert_type: a.type,
+        subject_table: a.subject_table,
+        subject_id: a.subject_id,
+        payload: a.payload,
+        created_at: now,
+        source: 'lighthouse',
+        version: '0.21.0',
+      }),
+    )
+    .catch(() => {
+      /* non-fatal */
+    });
   return Number(r.lastInsertRowid);
 }
 
@@ -770,6 +789,57 @@ export interface YearOverYearMonth {
   month: string; // 'MM'
   this_year_cents: number;
   last_year_cents: number;
+}
+
+export interface PatternByDayOfWeek {
+  dow: number; // 0 = Sunday, 6 = Saturday
+  total_cents: number;
+  count: number;
+}
+
+export interface PatternByHour {
+  hour: number; // 0..23
+  total_cents: number;
+  count: number;
+}
+
+/** Spending patterns by day-of-week and hour-of-day, last 365 days. */
+export function getSpendingPatterns(): {
+  by_dow: PatternByDayOfWeek[];
+  by_hour: PatternByHour[];
+} {
+  const cutoff = Date.now() - 365 * 24 * 60 * 60 * 1000;
+  const dowRows = getDb()
+    .prepare(
+      `SELECT CAST(strftime('%w', transaction_date / 1000, 'unixepoch') AS INTEGER) as dow,
+              SUM(total_amount_cents) as total_cents,
+              COUNT(*) as count
+       FROM receipts WHERE transaction_date >= ?
+       GROUP BY dow ORDER BY dow`,
+    )
+    .all(cutoff) as PatternByDayOfWeek[];
+  const hourRows = getDb()
+    .prepare(
+      `SELECT CAST(strftime('%H', transaction_date / 1000, 'unixepoch') AS INTEGER) as hour,
+              SUM(total_amount_cents) as total_cents,
+              COUNT(*) as count
+       FROM receipts WHERE transaction_date >= ?
+       GROUP BY hour ORDER BY hour`,
+    )
+    .all(cutoff) as PatternByHour[];
+
+  // Pad missing buckets so the chart always has 7/24 entries.
+  const padDow: PatternByDayOfWeek[] = [];
+  for (let i = 0; i < 7; i++) {
+    const r = dowRows.find((x) => x.dow === i);
+    padDow.push(r ?? { dow: i, total_cents: 0, count: 0 });
+  }
+  const padHour: PatternByHour[] = [];
+  for (let i = 0; i < 24; i++) {
+    const r = hourRows.find((x) => x.hour === i);
+    padHour.push(r ?? { hour: i, total_cents: 0, count: 0 });
+  }
+  return { by_dow: padDow, by_hour: padHour };
 }
 
 /** 12-month YoY series: same calendar month this year vs last year. */

@@ -19,6 +19,7 @@ import {
   getEmailById,
   getMonthlyTotals,
   getReceiptById,
+  getSpendingPatterns,
   getSubscriptionById,
   getMerchantTimeline,
   getSubscriptionHealth,
@@ -249,6 +250,46 @@ export function registerRoutes(app: FastifyInstance): void {
   app.get('/api/subscriptions-health', async () => getSubscriptionHealth());
 
   app.get('/api/insights', async () => ({ insights: getInsights(6) }));
+
+  app.get('/api/patterns', async () => getSpendingPatterns());
+
+  // --- Accounts -------------------------------------------------------
+  app.get('/api/accounts', async () => {
+    const { listAccounts } = await import('../db/accounts.js');
+    return { accounts: listAccounts() };
+  });
+
+  // --- Webhook --------------------------------------------------------
+  app.get('/api/webhook', async () => {
+    const { getWebhookUrl } = await import('../domain/webhooks.js');
+    return { url: getWebhookUrl() };
+  });
+  app.post(
+    '/api/webhook',
+    async (req: FastifyRequest<{ Body: { url: string | null } }>, reply) => {
+      try {
+        const { setWebhookUrl } = await import('../domain/webhooks.js');
+        setWebhookUrl(req.body?.url ?? null);
+        return { ok: true };
+      } catch (e) {
+        return reply.code(400).send({ error: 'invalid', message: (e as Error).message });
+      }
+    },
+  );
+  app.post('/api/webhook/test', async () => {
+    const { dispatchWebhook } = await import('../domain/webhooks.js');
+    dispatchWebhook({
+      type: 'alert',
+      alert_type: 'custom',
+      subject_table: 'test',
+      subject_id: 0,
+      payload: { rule_name: 'Lighthouse webhook test', test: true },
+      created_at: Date.now(),
+      source: 'lighthouse',
+      version: '0.21.0',
+    });
+    return { ok: true };
+  });
 
   // --- Custom alert rules ---------------------------------------------
   app.get('/api/custom-rules', async () => ({ rules: listCustomRules() }));
