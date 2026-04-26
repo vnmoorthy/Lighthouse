@@ -23,6 +23,7 @@ import {
   Monitor,
 } from 'lucide-react';
 import { useTheme, type Theme } from '../lib/theme';
+import CustomAlertsCard from '../components/CustomAlertsCard';
 
 export default function SettingsPage() {
   const qc = useQueryClient();
@@ -124,6 +125,14 @@ export default function SettingsPage() {
                 value={`${settings.data.api.host}:${settings.data.api.port} (localhost only)`}
                 mono
               />
+            </SectionCard>
+
+            {/* Custom alerts */}
+            <SectionCard
+              title="Custom alerts"
+              description="Watch for spending patterns that aren't built-in. Each rule fires once per 30 days while the condition holds."
+            >
+              <CustomAlertsCard />
             </SectionCard>
 
             {/* Sync */}

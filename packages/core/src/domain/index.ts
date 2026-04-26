@@ -5,3 +5,5 @@ export * from './dedupe.js';
 export * from './alerts.js';
 export * from './currency.js';
 export * from './cancel_links.js';
+export * from './insights.js';
+export * from './custom_alerts.js';

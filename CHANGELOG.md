@@ -1,5 +1,28 @@
 # Changelog
 
+## 0.14.0 — heatmap, insights, custom alerts (April 2026)
+
+**v0.11 — Calendar heatmap on /merchants/:id**
+- New `CalendarHeatmap` component: 53-week × 7-day grid in the GitHub
+  contribution-graph style, tinted by amount spent that day. Hover for
+  date + amount + count.
+
+**v0.12 — Insight cards (smart anomaly detection)**
+- New `domain/insights.ts` engine produces 4 kinds of "did you notice…?"
+  cards from existing data: category MoM swings, first-time merchants,
+  4-month upward streaks, and big single-day spend.
+- Inline `InsightsRow` on Overview, hidden when nothing's worth showing.
+
+**v0.13 — Custom alerts (user-defined rules)**
+- New `custom_alert_rules` table + idempotent `0002_custom_alerts.sql`
+  migration that widens the `alerts.type` check.
+- Three rule types: `merchant_threshold`, `category_threshold`,
+  `any_charge`.
+- `CustomAlertsCard` widget in Settings with create form + rule list.
+- `evaluateCustomRules()` runs at the end of every sync via the
+  pipeline post-processing pass. 30-day suppression matches built-in
+  alerts.
+
 ## 0.10.0 — six-iteration feature push (April 2026)
 
 A single push containing six significant feature additions, each pulled from

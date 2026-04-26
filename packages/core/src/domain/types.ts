@@ -28,7 +28,8 @@ export type AlertType =
   | 'trial_ending'
   | 'price_increase'
   | 'new_subscription'
-  | 'duplicate_charge';
+  | 'duplicate_charge'
+  | 'custom';
 
 export interface EmailRow {
   id: number;

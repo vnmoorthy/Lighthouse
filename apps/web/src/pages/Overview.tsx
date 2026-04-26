@@ -5,6 +5,7 @@ import KpiCard from '../components/KpiCard';
 import SpendChart from '../components/SpendChart';
 import TopMerchantsBar from '../components/TopMerchantsBar';
 import CategoryBreakdown from '../components/CategoryBreakdown';
+import InsightsRow from '../components/InsightsRow';
 import AlertsList from '../components/AlertsList';
 import { fmtMoney } from '../lib/format';
 import { Wallet, Repeat, BellRing, TrendingUp } from 'lucide-react';
@@ -163,6 +164,9 @@ export default function OverviewPage() {
             accent={k.open_alerts > 0 ? 'rose' : 'mint'}
           />
         </div>
+
+        {/* Insights */}
+        <InsightsRow />
 
         {/* Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

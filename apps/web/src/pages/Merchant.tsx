@@ -11,6 +11,7 @@ import { ArrowLeft } from 'lucide-react';
 import { api } from '../lib/api';
 import PageHeader from '../components/PageHeader';
 import MerchantBadge from '../components/MerchantBadge';
+import CalendarHeatmap from '../components/CalendarHeatmap';
 import { fmtDate, fmtMoney, fmtMonth } from '../lib/format';
 
 interface TimelineResponse {
@@ -94,6 +95,8 @@ export default function MerchantPage() {
             value={t.last_seen ? fmtDate(t.last_seen) : '—'}
           />
         </div>
+
+        <CalendarHeatmap entries={t.receipts} />
 
         <div className="lh-card p-5">
           <div className="flex items-end justify-between mb-4">

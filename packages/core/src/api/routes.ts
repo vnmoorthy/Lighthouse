@@ -32,6 +32,15 @@ import { kvGet, KV_KEYS } from '../db/kv.js';
 import { config } from '../config.js';
 import { toMonthlyCents } from '../domain/currency.js';
 import { getCancelLink } from '../domain/cancel_links.js';
+import { getInsights } from '../domain/insights.js';
+import {
+  createCustomRule,
+  deleteCustomRule,
+  evaluateCustomRules,
+  listCustomRules,
+  toggleCustomRule,
+  type RuleType,
+} from '../domain/custom_alerts.js';
 import { getMerchantById } from '../db/queries.js';
 import { syncOrchestrator } from './sync_orchestrator.js';
 import { log } from '../logger.js';
@@ -225,6 +234,46 @@ export function registerRoutes(app: FastifyInstance): void {
   );
 
   app.get('/api/subscriptions-health', async () => getSubscriptionHealth());
+
+  app.get('/api/insights', async () => ({ insights: getInsights(6) }));
+
+  // --- Custom alert rules ---------------------------------------------
+  app.get('/api/custom-rules', async () => ({ rules: listCustomRules() }));
+
+  app.post(
+    '/api/custom-rules',
+    async (
+      req: FastifyRequest<{ Body: { name: string; type: RuleType; payload: unknown } }>,
+      reply,
+    ) => {
+      try {
+        const id = createCustomRule(req.body);
+        return { id };
+      } catch (e) {
+        return reply.code(400).send({ error: 'invalid', message: (e as Error).message });
+      }
+    },
+  );
+
+  app.delete(
+    '/api/custom-rules/:id',
+    async (req: FastifyRequest<{ Params: { id: string } }>) => {
+      deleteCustomRule(Number.parseInt(req.params.id, 10));
+      return { ok: true };
+    },
+  );
+
+  app.post(
+    '/api/custom-rules/:id/toggle',
+    async (
+      req: FastifyRequest<{ Params: { id: string }; Body: { enabled: boolean } }>,
+    ) => {
+      toggleCustomRule(Number.parseInt(req.params.id, 10), req.body?.enabled ?? true);
+      return { ok: true };
+    },
+  );
+
+  app.post('/api/custom-rules/evaluate', async () => evaluateCustomRules());
 
   app.post(
     '/api/subscriptions/:id/mark-cancelled',
