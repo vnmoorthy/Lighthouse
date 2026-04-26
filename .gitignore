@@ -40,3 +40,9 @@ coverage/
 
 # OS / sandbox
 .git/objects/**/tmp_obj_*
+
+# Stale SVG mockups (kept for local reference; PNG screenshots are primary)
+docs/preview/overview.svg
+docs/preview/subscriptions.svg
+docs/preview/receipts.svg
+docs/preview/alerts.svg
