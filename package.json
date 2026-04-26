@@ -31,7 +31,14 @@
     "lint:fix": "eslint . --ext .ts,.tsx --fix",
     "format": "prettier --write \"**/*.{ts,tsx,json,md}\"",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "check": "npm run typecheck && npm run lint && npm run test && npm run build:web",
+    "check:fast": "npm run typecheck && npm run lint",
+    "prepare": "simple-git-hooks || true"
+  },
+  "simple-git-hooks": {
+    "pre-commit": "npm run check:fast",
+    "pre-push": "npm run check"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.1",
@@ -73,6 +80,7 @@
     "eslint-plugin-react-refresh": "^0.4.12",
     "postcss": "^8.4.47",
     "prettier": "^3.3.3",
+    "simple-git-hooks": "^2.11.1",
     "tailwindcss": "^3.4.13",
     "tsx": "^4.19.1",
     "typescript": "^5.6.3",

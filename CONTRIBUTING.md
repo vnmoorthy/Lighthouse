@@ -51,6 +51,24 @@ Tests live in `test/` and use Vitest. Side-effecting tests should set `LIGHTHOUS
 - Use the Edit tool / your editor's autofix to keep imports tidy.
 - `npm run format` runs Prettier; `npm run lint` runs ESLint.
 
+## Pre-push checks
+
+`simple-git-hooks` is wired into the repo. After `npm install`, two hooks run automatically:
+
+| Hook | When | What it runs |
+| --- | --- | --- |
+| `pre-commit` | Every `git commit` | `npm run check:fast` (typecheck + lint) |
+| `pre-push` | Every `git push` | `npm run check` (typecheck + lint + test + build) |
+
+The two manual scripts:
+
+```bash
+npm run check:fast   # typecheck + lint — runs in seconds
+npm run check        # full CI gauntlet — typecheck + lint + test + build
+```
+
+If you skip the hooks (`git push --no-verify`), CI will catch you. Better to run `npm run check` once locally than to chase a red checkmark on GitHub.
+
 ## Commits and PRs
 
 - Squash-merge style. Keep your commit history tidy on your branch.
