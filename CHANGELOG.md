@@ -1,5 +1,32 @@
 # Changelog
 
+## 0.18.0 — tags, budgets, iCal feed, weekly digest (April 2026)
+
+**v0.15 — Tags**
+- New `receipt_tags` table + `0003_tags.sql` migration. Free-text tags
+  with normalize-on-write (lowercase + kebab-case + 32-char cap).
+- Tag CRUD via `/api/receipts/:id/tags` and `/api/tags`.
+- Tag filter on `/api/receipts?tag=…`.
+
+**v0.16 — Budgets per category**
+- New `budgets` table + `0004_budgets.sql` migration.
+- `getBudgetProgress()` computes used / cap / pace ratio against the
+  current calendar month.
+- `BudgetsDisplay` widget on Overview shows progress bars with a
+  pace-marker line for "% of month elapsed".
+- `BudgetsEdit` widget in Settings: create / list / delete budgets.
+- `evaluateBudgets()` fires alerts at ≥80% of cap, in the post-sync pass.
+
+**v0.17 — iCal feed + weekly digest CLI**
+- `/api/calendar/<token>.ics` serves a VCALENDAR feed of every active
+  subscription's next renewal date. All-day events with a 1-day VALARM.
+  Token-in-URL because calendar clients don't send Authorization.
+- `/api/calendar-url` returns the ready-to-paste URL.
+- `npm run digest` (or `lighthouse digest --days 30 --json`) prints a
+  markdown summary suitable for cron-emailing-yourself or piping into a
+  weekly status doc. Includes spend totals, top merchants, trial
+  warnings, forgotten subs, and insight cards.
+
 ## 0.14.0 — heatmap, insights, custom alerts (April 2026)
 
 **v0.11 — Calendar heatmap on /merchants/:id**

@@ -7,3 +7,4 @@ export * from './currency.js';
 export * from './cancel_links.js';
 export * from './insights.js';
 export * from './custom_alerts.js';
+export * from './budgets.js';

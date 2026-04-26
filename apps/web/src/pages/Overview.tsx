@@ -5,6 +5,7 @@ import KpiCard from '../components/KpiCard';
 import SpendChart from '../components/SpendChart';
 import TopMerchantsBar from '../components/TopMerchantsBar';
 import CategoryBreakdown from '../components/CategoryBreakdown';
+import { BudgetsDisplay } from '../components/BudgetsCard';
 import InsightsRow from '../components/InsightsRow';
 import AlertsList from '../components/AlertsList';
 import { fmtMoney } from '../lib/format';
@@ -178,7 +179,7 @@ export default function OverviewPage() {
           </div>
         </div>
 
-        {/* Category breakdown + summary */}
+        {/* Category breakdown + YoY */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
             <CategoryBreakdown data={summary.data.categories} />
@@ -187,6 +188,9 @@ export default function OverviewPage() {
             <YoYCard yoy={summary.data.year_over_year} />
           </div>
         </div>
+
+        {/* Budgets */}
+        <BudgetsDisplay />
 
         {/* Alerts + inbox health */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

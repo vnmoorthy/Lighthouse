@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { useTheme, type Theme } from '../lib/theme';
 import CustomAlertsCard from '../components/CustomAlertsCard';
+import { BudgetsEdit } from '../components/BudgetsCard';
 
 export default function SettingsPage() {
   const qc = useQueryClient();
@@ -125,6 +126,14 @@ export default function SettingsPage() {
                 value={`${settings.data.api.host}:${settings.data.api.port} (localhost only)`}
                 mono
               />
+            </SectionCard>
+
+            {/* Budgets */}
+            <SectionCard
+              title="Budgets"
+              description="Set a monthly cap per category. We'll alert you when you cross 80%."
+            >
+              <BudgetsEdit />
             </SectionCard>
 
             {/* Custom alerts */}

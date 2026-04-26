@@ -13,6 +13,7 @@ import { statusCommand } from './commands/status.js';
 import { alertsCommand } from './commands/alerts.js';
 import { exportCommand } from './commands/export.js';
 import { importTakeoutCommand } from './commands/import_takeout.js';
+import { digestCommand } from './commands/digest.js';
 
 const program = new Command();
 program
@@ -94,6 +95,20 @@ program
   .action(async (opts) => {
     try {
       await exportCommand(opts);
+    } catch (e) {
+      console.error(chalk.red(`✗ ${(e as Error).message}`));
+      process.exit(1);
+    }
+  });
+
+program
+  .command('digest')
+  .description('Print a markdown summary of the last N days (default 7).')
+  .option('--days <n>', 'Number of trailing days to summarize.', '7')
+  .option('--json', 'Emit JSON instead of Markdown.', false)
+  .action(async (opts) => {
+    try {
+      await digestCommand(opts);
     } catch (e) {
       console.error(chalk.red(`✗ ${(e as Error).message}`));
       process.exit(1);

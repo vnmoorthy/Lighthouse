@@ -184,6 +184,7 @@ export interface ReceiptListFilter {
   to?: number | null;
   merchantId?: number | null;
   category?: string | null;
+  tag?: string | null;
   q?: string | null;
   limit?: number;
   offset?: number;
@@ -199,6 +200,10 @@ export function listReceipts(f: ReceiptListFilter = {}): {
   if (f.to != null) { where.push('r.transaction_date <= ?'); params.push(f.to); }
   if (f.merchantId != null) { where.push('r.merchant_id = ?'); params.push(f.merchantId); }
   if (f.category) { where.push('m.category = ?'); params.push(f.category); }
+  if (f.tag) {
+    where.push('r.id IN (SELECT receipt_id FROM receipt_tags WHERE tag = ?)');
+    params.push(f.tag);
+  }
   if (f.q) {
     where.push('(LOWER(m.display_name) LIKE ? OR LOWER(r.order_number) LIKE ?)');
     const q = `%${f.q.toLowerCase()}%`;
@@ -239,6 +244,46 @@ export function getReceiptById(
       | (ReceiptRow & { merchant_display_name: string; merchant_domain: string | null })
       | undefined) ?? null
   );
+}
+
+// --- Receipt tags ----------------------------------------------------------
+
+export function addReceiptTags(receiptId: number, tags: string[]): void {
+  if (tags.length === 0) return;
+  const stmt = getDb().prepare(
+    `INSERT INTO receipt_tags (receipt_id, tag, created_at) VALUES (?, ?, ?)
+     ON CONFLICT (receipt_id, tag) DO NOTHING`,
+  );
+  const now = Date.now();
+  return tx(() => {
+    for (const t of tags) {
+      const clean = normalizeTag(t);
+      if (clean) stmt.run(receiptId, clean, now);
+    }
+  });
+}
+
+export function removeReceiptTag(receiptId: number, tag: string): void {
+  getDb()
+    .prepare('DELETE FROM receipt_tags WHERE receipt_id = ? AND tag = ?')
+    .run(receiptId, normalizeTag(tag));
+}
+
+export function getReceiptTags(receiptId: number): string[] {
+  const rows = getDb()
+    .prepare('SELECT tag FROM receipt_tags WHERE receipt_id = ? ORDER BY tag')
+    .all(receiptId) as { tag: string }[];
+  return rows.map((r) => r.tag);
+}
+
+export function listAllTagsWithCounts(): { tag: string; count: number }[] {
+  return getDb()
+    .prepare('SELECT tag, COUNT(*) as count FROM receipt_tags GROUP BY tag ORDER BY count DESC')
+    .all() as { tag: string; count: number }[];
+}
+
+function normalizeTag(t: string): string {
+  return t.toLowerCase().trim().replace(/\s+/g, '-').slice(0, 32);
 }
 
 // --- Subscriptions ---------------------------------------------------------

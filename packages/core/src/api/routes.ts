@@ -9,8 +9,12 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { z } from 'zod';
 import {
+  addReceiptTags,
   countEmailsByStatus,
   dismissAlert,
+  getReceiptTags,
+  listAllTagsWithCounts,
+  removeReceiptTag,
   getCategoryBreakdown,
   getEmailById,
   getMonthlyTotals,
@@ -41,7 +45,14 @@ import {
   toggleCustomRule,
   type RuleType,
 } from '../domain/custom_alerts.js';
+import {
+  deleteBudget,
+  getBudgetProgress,
+  upsertBudget,
+} from '../domain/budgets.js';
 import { getMerchantById } from '../db/queries.js';
+import { kvGet as kvGetForIcal } from '../db/kv.js';
+import { buildSubscriptionsIcs } from './ical.js';
 import { syncOrchestrator } from './sync_orchestrator.js';
 import { log } from '../logger.js';
 
@@ -54,6 +65,7 @@ interface ReceiptListQuery {
   to?: string;
   merchant?: string;
   category?: string;
+  tag?: string;
   q?: string;
   limit?: string;
   offset?: string;
@@ -125,6 +137,7 @@ export function registerRoutes(app: FastifyInstance): void {
         to: q.to ? Number.parseInt(q.to, 10) : null,
         merchantId: q.merchant ? Number.parseInt(q.merchant, 10) : null,
         category: q.category ?? null,
+        tag: q.tag ?? null,
         q: q.q ?? null,
         limit: q.limit ? Number.parseInt(q.limit, 10) : 50,
         offset: q.offset ? Number.parseInt(q.offset, 10) : 0,
@@ -275,6 +288,64 @@ export function registerRoutes(app: FastifyInstance): void {
 
   app.post('/api/custom-rules/evaluate', async () => evaluateCustomRules());
 
+  // --- Budgets --------------------------------------------------------
+  app.get('/api/budgets', async () => ({ budgets: getBudgetProgress() }));
+
+  app.post(
+    '/api/budgets',
+    async (
+      req: FastifyRequest<{ Body: { category: string; amount_cents: number } }>,
+      reply,
+    ) => {
+      const { category, amount_cents } = req.body ?? {};
+      if (!category || !Number.isFinite(amount_cents) || amount_cents <= 0) {
+        return reply.code(400).send({ error: 'invalid' });
+      }
+      return upsertBudget(category, amount_cents);
+    },
+  );
+
+  app.delete(
+    '/api/budgets/:id',
+    async (req: FastifyRequest<{ Params: { id: string } }>) => {
+      deleteBudget(Number.parseInt(req.params.id, 10));
+      return { ok: true };
+    },
+  );
+
+  // --- Tags -----------------------------------------------------------
+  app.get('/api/tags', async () => ({ tags: listAllTagsWithCounts() }));
+
+  app.get(
+    '/api/receipts/:id/tags',
+    async (req: FastifyRequest<{ Params: { id: string } }>) => {
+      const id = Number.parseInt(req.params.id, 10);
+      return { tags: getReceiptTags(id) };
+    },
+  );
+
+  app.post(
+    '/api/receipts/:id/tags',
+    async (
+      req: FastifyRequest<{ Params: { id: string }; Body: { tags: string[] } }>,
+    ) => {
+      const id = Number.parseInt(req.params.id, 10);
+      addReceiptTags(id, req.body?.tags ?? []);
+      return { tags: getReceiptTags(id) };
+    },
+  );
+
+  app.delete(
+    '/api/receipts/:id/tags/:tag',
+    async (
+      req: FastifyRequest<{ Params: { id: string; tag: string } }>,
+    ) => {
+      const id = Number.parseInt(req.params.id, 10);
+      removeReceiptTag(id, decodeURIComponent(req.params.tag));
+      return { tags: getReceiptTags(id) };
+    },
+  );
+
   app.post(
     '/api/subscriptions/:id/mark-cancelled',
     async (req: FastifyRequest<{ Params: { id: string } }>, reply) => {
@@ -368,6 +439,23 @@ export function registerRoutes(app: FastifyInstance): void {
       };
     },
   );
+
+  // --- iCal feed of subscription renewals ------------------------------
+  app.get(
+    '/api/calendar/:token.ics',
+    async (_req, reply) => {
+      const ics = buildSubscriptionsIcs();
+      return reply.type('text/calendar; charset=utf-8').send(ics);
+    },
+  );
+  // Convenience JSON endpoint that returns the ready-to-use feed URL the
+  // user should paste into their calendar app.
+  app.get('/api/calendar-url', async () => {
+    const t = kvGetForIcal('api.bearer_token') ?? '';
+    return {
+      url: `http://${config.api.host}:${config.api.port}/api/calendar/${t}.ics`,
+    };
+  });
 
   // --- Settings / wipe -------------------------------------------------
   app.get('/api/settings', async () => ({

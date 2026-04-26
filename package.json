@@ -1,6 +1,6 @@
 {
   "name": "lighthouse",
-  "version": "0.14.0",
+  "version": "0.18.0",
   "private": true,
   "description": "Self-hosted Gmail receipt and subscription tracker. Privacy-first, AI-powered, MIT licensed.",
   "license": "MIT",
@@ -18,6 +18,7 @@
     "serve": "tsx apps/cli/src/index.ts serve",
     "status": "tsx apps/cli/src/index.ts status",
     "alerts": "tsx apps/cli/src/index.ts alerts",
+    "digest": "tsx apps/cli/src/index.ts digest",
     "export": "tsx apps/cli/src/index.ts export",
     "import:gmail-takeout": "tsx apps/cli/src/index.ts import-takeout",
     "seed:demo": "tsx packages/core/src/seed/demo.ts",

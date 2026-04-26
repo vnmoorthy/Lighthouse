@@ -36,16 +36,26 @@ export async function startServer(): Promise<StartedServer> {
   //   - /api/health
   //   - /api/__token__ from a same-machine origin (so the web app can fetch
   //     the bearer token automatically). Localhost-only.
+  //   - /api/calendar/<token>.ics: the iCal feed must be GET-only with the
+  //     token in the URL because calendar clients don't send Authorization
+  //     headers. Same-host check still applies.
   //   - Anything else: must include `Authorization: Bearer <token>`.
   app.addHook('onRequest', async (req: FastifyRequest, reply: FastifyReply) => {
     const url = req.url.split('?')[0] ?? '/';
     if (url === '/api/health') return;
     if (url === '/api/__token__') {
-      // Only same-host requests. Trust no proxy.
       if (req.ip !== '127.0.0.1' && req.ip !== '::1') {
         return reply.code(403).send({ error: 'forbidden' });
       }
       return reply.send({ token });
+    }
+    if (url.startsWith('/api/calendar/') && url.endsWith('.ics')) {
+      const segment = url.slice('/api/calendar/'.length, -'.ics'.length);
+      if (segment !== token) return reply.code(401).send({ error: 'unauthorized' });
+      if (req.ip !== '127.0.0.1' && req.ip !== '::1') {
+        return reply.code(403).send({ error: 'forbidden' });
+      }
+      return; // continue to handler
     }
     if (!url.startsWith('/api/')) return; // SPA static assets — let static handler deal.
     const auth = req.headers.authorization ?? '';
