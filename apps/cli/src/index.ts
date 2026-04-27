@@ -92,6 +92,11 @@ program
     'Restrict CSV to merchants in business-deductible categories.',
     false,
   )
+  .option(
+    '--format <fmt>',
+    'Output format: lighthouse | ynab | lunchmoney | beancount.',
+    'lighthouse',
+  )
   .action(async (opts) => {
     try {
       await exportCommand(opts);

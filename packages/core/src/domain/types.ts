@@ -80,6 +80,7 @@ export interface ReceiptRow {
   confidence: number;
   extraction_model: string;
   raw_extraction_json: string | null;
+  user_note: string | null;
   created_at: number;
 }
 

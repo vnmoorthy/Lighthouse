@@ -10,6 +10,7 @@ import SettingsPage from './pages/Settings';
 import MerchantPage from './pages/Merchant';
 import MerchantsPage from './pages/Merchants';
 import YearSummaryPage from './pages/YearSummary';
+import ComparePage from './pages/Compare';
 import PrivacyPage from './pages/Privacy';
 import NotFoundPage from './pages/NotFound';
 
@@ -29,6 +30,7 @@ export default function App() {
           <Route path="/merchants" element={<MerchantsPage />} />
           <Route path="/merchants/:id" element={<MerchantPage />} />
           <Route path="/year/:year" element={<YearSummaryPage />} />
+          <Route path="/compare" element={<ComparePage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>

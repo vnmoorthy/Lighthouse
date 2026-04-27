@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.34.0 — month compare, multi-currency, exports, notes (April 2026)
+
+**v0.30 — Side-by-side month compare**
+- New `getMonthSlice(yyyy_mm)` query.
+- New `/compare?a=2026-04&b=2026-03` page: hero KPIs with delta banner,
+  category swing bars (biggest first), top-merchant table with Δ column.
+
+**v0.31 — Multi-currency preference**
+- New `domain/fx.ts` with a static rate table (~20 majors, override per-CCY
+  via `LIGHTHOUSE_FX_<CCY>` env). Receipts stay in their native currency
+  forever; the dashboard converts at render time.
+- `/api/currency` GET/POST + `CurrencyPicker` widget in Settings.
+
+**v0.32 — Multi-format export (YNAB / Lunch Money / Beancount)**
+- New `apps/cli/src/commands/export_formats.ts` with renderers for YNAB
+  CSV (Date / Payee / Memo / Outflow / Inflow), Lunch Money JSON, and
+  Beancount plain-text transactions.
+- \`npm run export -- --format ynab\` (or lunchmoney/beancount).
+
+**v0.33 — Receipt notes + amount-range search**
+- New `0006_receipt_notes.sql` migration: `user_note TEXT` on receipts.
+- `setReceiptNote()` query + \`POST /api/receipts/:id/note\`.
+- \`/api/receipts?min=&max=\` filters by ABS amount in dollars.
+
 ## 0.29.0 — year-end report, photo OCR, merchant management (April 2026)
 
 **v0.26 — Year-end summary**

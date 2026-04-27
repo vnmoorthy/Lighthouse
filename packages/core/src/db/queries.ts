@@ -183,7 +183,9 @@ export function bulkSetReceiptMerchant(receiptIds: number[], merchantId: number)
 
 // --- Receipts --------------------------------------------------------------
 
-export function insertReceipt(r: Omit<ReceiptRow, 'id' | 'created_at'>): number {
+export function insertReceipt(
+  r: Omit<ReceiptRow, 'id' | 'created_at' | 'user_note'> & { user_note?: string | null },
+): number {
   const res = getDb()
     .prepare(
       `INSERT INTO receipts (
@@ -224,9 +226,15 @@ export interface ReceiptListFilter {
   merchantId?: number | null;
   category?: string | null;
   tag?: string | null;
+  minCents?: number | null;
+  maxCents?: number | null;
   q?: string | null;
   limit?: number;
   offset?: number;
+}
+
+export function setReceiptNote(id: number, note: string | null): void {
+  getDb().prepare('UPDATE receipts SET user_note = ? WHERE id = ?').run(note, id);
 }
 
 export function listReceipts(f: ReceiptListFilter = {}): {
@@ -243,6 +251,8 @@ export function listReceipts(f: ReceiptListFilter = {}): {
     where.push('r.id IN (SELECT receipt_id FROM receipt_tags WHERE tag = ?)');
     params.push(f.tag);
   }
+  if (f.minCents != null) { where.push('ABS(r.total_amount_cents) >= ?'); params.push(f.minCents); }
+  if (f.maxCents != null) { where.push('ABS(r.total_amount_cents) <= ?'); params.push(f.maxCents); }
   if (f.q) {
     where.push('(LOWER(m.display_name) LIKE ? OR LOWER(r.order_number) LIKE ?)');
     const q = `%${f.q.toLowerCase()}%`;
@@ -875,6 +885,58 @@ export interface YearSummary {
   biggest_month: { month: string; total_cents: number; count: number } | null;
   active_subscriptions_at_year_end: number;
   monthly_subscription_cost_cents: number;
+}
+
+export interface MonthSlice {
+  yyyy_mm: string;
+  total_cents: number;
+  count: number;
+  categories: { category: string; total_cents: number; count: number }[];
+  top_merchants: { merchant_id: number; display_name: string; total_cents: number; count: number }[];
+}
+
+/** Slice of one calendar month's spend by category + top merchants. */
+export function getMonthSlice(yyyyMm: string): MonthSlice {
+  const m = /^(\d{4})-(\d{2})$/.exec(yyyyMm);
+  if (!m) {
+    return { yyyy_mm: yyyyMm, total_cents: 0, count: 0, categories: [], top_merchants: [] };
+  }
+  const year = Number.parseInt(m[1]!, 10);
+  const month = Number.parseInt(m[2]!, 10) - 1;
+  const start = Date.UTC(year, month, 1);
+  const end = Date.UTC(year, month + 1, 1);
+  const db = getDb();
+  const totals = db
+    .prepare(
+      `SELECT COALESCE(SUM(total_amount_cents), 0) as total, COUNT(*) as count
+       FROM receipts WHERE transaction_date >= ? AND transaction_date < ?`,
+    )
+    .get(start, end) as { total: number; count: number };
+  const categories = db
+    .prepare(
+      `SELECT COALESCE(m.category, 'other') as category,
+              SUM(r.total_amount_cents) as total_cents, COUNT(*) as count
+       FROM receipts r JOIN merchants m ON m.id = r.merchant_id
+       WHERE r.transaction_date >= ? AND r.transaction_date < ?
+       GROUP BY category ORDER BY total_cents DESC`,
+    )
+    .all(start, end) as { category: string; total_cents: number; count: number }[];
+  const topMerchants = db
+    .prepare(
+      `SELECT m.id as merchant_id, m.display_name,
+              SUM(r.total_amount_cents) as total_cents, COUNT(*) as count
+       FROM receipts r JOIN merchants m ON m.id = r.merchant_id
+       WHERE r.transaction_date >= ? AND r.transaction_date < ?
+       GROUP BY m.id ORDER BY total_cents DESC LIMIT 10`,
+    )
+    .all(start, end) as { merchant_id: number; display_name: string; total_cents: number; count: number }[];
+  return {
+    yyyy_mm: yyyyMm,
+    total_cents: totals.total,
+    count: totals.count,
+    categories,
+    top_merchants: topMerchants,
+  };
 }
 
 /** Aggregated annual summary suitable for a "Year in review" page. */

@@ -29,6 +29,7 @@ import AccountsCard from '../components/AccountsCard';
 import WebhookCard from '../components/WebhookCard';
 import NotificationsToggle from '../components/NotificationsToggle';
 import PhotoUpload from '../components/PhotoUpload';
+import CurrencyPicker from '../components/CurrencyPicker';
 
 export default function SettingsPage() {
   const qc = useQueryClient();
@@ -114,6 +115,14 @@ export default function SettingsPage() {
               description="Lighthouse follows your OS appearance by default. Override here if you'd like."
             >
               <ThemeSwitch />
+            </SectionCard>
+
+            {/* Currency */}
+            <SectionCard
+              title="Currency"
+              description="What units the dashboard displays. Receipts retain their original currency in the database."
+            >
+              <CurrencyPicker />
             </SectionCard>
 
             {/* Provider */}

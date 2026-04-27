@@ -68,6 +68,8 @@ interface ReceiptListQuery {
   merchant?: string;
   category?: string;
   tag?: string;
+  min?: string;
+  max?: string;
   q?: string;
   limit?: string;
   offset?: string;
@@ -140,6 +142,8 @@ export function registerRoutes(app: FastifyInstance): void {
         merchantId: q.merchant ? Number.parseInt(q.merchant, 10) : null,
         category: q.category ?? null,
         tag: q.tag ?? null,
+        minCents: q.min ? Math.round(Number.parseFloat(q.min) * 100) : null,
+        maxCents: q.max ? Math.round(Number.parseFloat(q.max) * 100) : null,
         q: q.q ?? null,
         limit: q.limit ? Number.parseInt(q.limit, 10) : 50,
         offset: q.offset ? Number.parseInt(q.offset, 10) : 0,
@@ -262,6 +266,14 @@ export function registerRoutes(app: FastifyInstance): void {
     },
   );
 
+  app.get(
+    '/api/month/:yyyyMm',
+    async (req: FastifyRequest<{ Params: { yyyyMm: string } }>) => {
+      const { getMonthSlice } = await import('../db/queries.js');
+      return getMonthSlice(req.params.yyyyMm);
+    },
+  );
+
   // --- Receipt photo OCR ----------------------------------------------
   app.post(
     '/api/ingest/photo',
@@ -338,6 +350,23 @@ export function registerRoutes(app: FastifyInstance): void {
     const { listAccounts } = await import('../db/accounts.js');
     return { accounts: listAccounts() };
   });
+
+  // --- Display currency -----------------------------------------------
+  app.get('/api/currency', async () => {
+    const { getDisplayCurrency, listSupportedCurrencies } = await import('../domain/fx.js');
+    return {
+      display: getDisplayCurrency(),
+      supported: listSupportedCurrencies(),
+    };
+  });
+  app.post(
+    '/api/currency',
+    async (req: FastifyRequest<{ Body: { ccy: string } }>) => {
+      const { setDisplayCurrency } = await import('../domain/fx.js');
+      setDisplayCurrency(req.body?.ccy ?? 'USD');
+      return { ok: true };
+    },
+  );
 
   // --- Notifications --------------------------------------------------
   app.get('/api/notifications', async () => {
@@ -582,6 +611,17 @@ export function registerRoutes(app: FastifyInstance): void {
       if (!intoId || intoId === fromId) return reply.code(400).send({ error: 'invalid' });
       const { mergeMerchants } = await import('../db/queries.js');
       mergeMerchants(fromId, intoId);
+      return { ok: true };
+    },
+  );
+
+  app.post(
+    '/api/receipts/:id/note',
+    async (
+      req: FastifyRequest<{ Params: { id: string }; Body: { note: string | null } }>,
+    ) => {
+      const { setReceiptNote } = await import('../db/queries.js');
+      setReceiptNote(Number.parseInt(req.params.id, 10), req.body?.note ?? null);
       return { ok: true };
     },
   );

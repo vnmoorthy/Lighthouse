@@ -10,15 +10,18 @@ import { join, resolve } from 'node:path';
 import {
   getDb,
   getMerchantById,
+  listMerchants,
   listReceipts,
   listSubscriptions,
   listChargesForSubscription,
   toMonthlyCents,
 } from '@lighthouse/core';
+import { renderReceipts, type ExportFormat } from './export_formats.js';
 
 interface ExportOpts {
   out: string;
   taxOnly?: boolean;
+  format?: ExportFormat;
 }
 
 function escapeCsv(s: string): string {
@@ -44,36 +47,29 @@ export async function exportCommand(opts: ExportOpts): Promise<void> {
   const dir = resolve(opts.out);
   mkdirSync(dir, { recursive: true });
 
-  // Receipts CSV with category column for tax export use.
+  const format: ExportFormat = (opts.format ?? 'lighthouse') as ExportFormat;
+
+  // Pull receipts + merchant metadata.
   const allReceipts = listReceipts({ limit: 100_000 }).rows;
-  const csvLines = [
-    'date,merchant,category,total,currency,order_number,payment_method,confidence,line_items',
-  ];
-  let included = 0;
-  for (const r of allReceipts) {
+  const merchantList = listMerchants();
+  const merchantMap = new Map(merchantList.map((m) => [m.id, m]));
+
+  // Tax filter only applies to the lighthouse-native CSV.
+  const filtered = allReceipts.filter((r) => {
+    if (!opts.taxOnly) return true;
     const merchant = getMerchantById(r.merchant_id);
-    const category = merchant?.category ?? 'other';
-    if (opts.taxOnly && !TAX_DEDUCTIBLE_CATEGORIES.has(category)) continue;
-    const date = new Date(r.transaction_date).toISOString().slice(0, 10);
-    const total = (r.total_amount_cents / 100).toFixed(2);
-    const items = r.line_items_json ?? '';
-    csvLines.push(
-      [
-        date,
-        escapeCsv(r.merchant_display_name),
-        category,
-        total,
-        r.currency,
-        escapeCsv(r.order_number ?? ''),
-        escapeCsv(r.payment_method ?? ''),
-        r.confidence.toFixed(2),
-        escapeCsv(items),
-      ].join(','),
-    );
-    included++;
-  }
-  const csvPath = join(dir, opts.taxOnly ? 'receipts-tax.csv' : 'receipts.csv');
-  writeFileSync(csvPath, csvLines.join('\n'));
+    return TAX_DEDUCTIBLE_CATEGORIES.has(merchant?.category ?? 'other');
+  });
+
+  const rendered = renderReceipts(
+    filtered.map((r) => ({ ...r, category: merchantMap.get(r.merchant_id)?.category ?? null })),
+    merchantMap,
+    format,
+  );
+  const csvPath = join(dir, opts.taxOnly && format === 'lighthouse' ? 'receipts-tax.csv' : rendered.filename);
+  writeFileSync(csvPath, rendered.content);
+  const included = filtered.length;
+  void escapeCsv;
 
   // Subscriptions JSON.
   const subs = listSubscriptions().map((s) => ({

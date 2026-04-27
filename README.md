@@ -5,7 +5,7 @@
 <p align="center">
   <a href="https://github.com/vnmoorthy/Lighthouse/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/vnmoorthy/Lighthouse/ci.yml?branch=main&label=CI&style=flat-square" alt="CI"></a>
   <a href="./LICENSE"><img src="https://img.shields.io/github/license/vnmoorthy/Lighthouse?style=flat-square&color=blue" alt="License"></a>
-  <a href="./CHANGELOG.md"><img src="https://img.shields.io/badge/version-0.29.0-e58e5a?style=flat-square" alt="Version"></a>
+  <a href="./CHANGELOG.md"><img src="https://img.shields.io/badge/version-0.34.0-e58e5a?style=flat-square" alt="Version"></a>
   <a href="https://github.com/vnmoorthy/Lighthouse/stargazers"><img src="https://img.shields.io/github/stars/vnmoorthy/Lighthouse?style=flat-square&color=fbbf24" alt="Stars"></a>
   <a href="https://github.com/vnmoorthy/Lighthouse/issues?q=is%3Aopen+label%3A%22good+first+issue%22"><img src="https://img.shields.io/github/issues/vnmoorthy/Lighthouse/good%20first%20issue?style=flat-square&color=84cc16" alt="Good first issues"></a>
 </p>
