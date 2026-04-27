@@ -11,7 +11,7 @@ import MoneyFlowSankey from '../components/MoneyFlowSankey';
 import InsightsRow from '../components/InsightsRow';
 import AlertsList from '../components/AlertsList';
 import { fmtMoney } from '../lib/format';
-import { Wallet, Repeat, BellRing, TrendingUp } from 'lucide-react';
+import { Wallet, Repeat, BellRing, TrendingUp, PiggyBank, ArrowDownRight, Percent } from 'lucide-react';
 
 function pct(curr: number, prev: number): number {
   if (!prev) return 0;
@@ -167,6 +167,48 @@ export default function OverviewPage() {
             accent={k.open_alerts > 0 ? 'rose' : 'mint'}
           />
         </div>
+
+        {/* Income-derived KPIs (only render when income data exists). */}
+        {k.income_30d_cents != null && k.income_30d_cents > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <KpiCard
+              label="Income · 30d"
+              value={fmtMoney(k.income_30d_cents)}
+              hint="Trailing window"
+              icon={<PiggyBank size={14} strokeWidth={1.75} />}
+              accent="mint"
+            />
+            <KpiCard
+              label="Net · 30d"
+              value={fmtMoney(k.net_30d_cents ?? 0)}
+              hint={(k.net_30d_cents ?? 0) >= 0 ? 'You saved' : 'Outspending'}
+              icon={<ArrowDownRight size={14} strokeWidth={1.75} />}
+              accent={(k.net_30d_cents ?? 0) >= 0 ? 'mint' : 'rose'}
+            />
+            <KpiCard
+              label="Savings rate"
+              value={
+                k.savings_rate_30d != null
+                  ? `${(k.savings_rate_30d * 100).toFixed(0)}%`
+                  : '—'
+              }
+              hint="of income kept"
+              icon={<Percent size={14} strokeWidth={1.75} />}
+              accent={(k.savings_rate_30d ?? 0) >= 0.2 ? 'mint' : 'gold'}
+            />
+            <KpiCard
+              label="Subs as % of income"
+              value={
+                k.subscriptions_as_pct_of_income != null
+                  ? `${(k.subscriptions_as_pct_of_income * 100).toFixed(1)}%`
+                  : '—'
+              }
+              hint="Monthly recurring vs income"
+              icon={<Repeat size={14} strokeWidth={1.75} />}
+              accent="violet"
+            />
+          </div>
+        ) : null}
 
         {/* Insights */}
         <InsightsRow />

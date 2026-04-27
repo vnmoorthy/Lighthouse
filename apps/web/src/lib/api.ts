@@ -66,6 +66,10 @@ export interface SummaryResponse {
     monthly_subscription_cost_cents: number;
     annual_run_rate_cents: number;
     open_alerts: number;
+    income_30d_cents?: number;
+    net_30d_cents?: number;
+    savings_rate_30d?: number | null;
+    subscriptions_as_pct_of_income?: number | null;
   };
   email_processing: Record<string, number>;
   categories: {

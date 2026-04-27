@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.46.0 — paystub extractor, savings KPIs, webhook retry (April 2026)
+
+**v0.43 — LLM paystub extractor**
+- New `paystub` classification + `extractPaystub()` extractor.
+- Pipeline branch writes a row to `income` when `is_paystub=true` —
+  income tracking auto-fills from paycheck/payroll-provider emails.
+- Closes the loop on income: manual entry remains available, but most
+  users won't need it after a single sync.
+
+**v0.44 — Net spend & savings rate KPIs**
+- `/api/summary` now includes income-derived KPIs: `income_30d_cents`,
+  `net_30d_cents`, `savings_rate_30d`, `subscriptions_as_pct_of_income`.
+- New "Income · 30d / Net · 30d / Savings rate / Subs as % of income"
+  KPI row on Overview, only rendered when income data exists. Tone
+  flips green/rose based on whether the user is net-positive.
+
+**v0.45 — Webhook retry queue**
+- New `webhook_deliveries` table + `0011_webhook_log.sql`.
+- Every dispatch now queues; the runner picks up pending rows and
+  retries failures with exponential backoff (5s, 30s, 5min) up to 3
+  attempts. 30-day GC.
+- New `runWebhookQueue()`, `listWebhookDeliveries()`,
+  `/api/webhook/deliveries`, `/api/webhook/queue`.
+- `WebhookCard` shows a live "recent deliveries" log, refreshed every
+  5s, with status icons (success / failed / pending).
+
 ## 0.42.0 — income, auto-recategorize, attachments (April 2026)
 
 **v0.39 — Income tracking**

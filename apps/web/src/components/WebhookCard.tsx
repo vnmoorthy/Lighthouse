@@ -7,7 +7,8 @@
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, apiPost } from '../lib/api';
-import { CheckCircle2, Send } from 'lucide-react';
+import { CheckCircle2, Send, AlertCircle, Clock } from 'lucide-react';
+import { fmtRelative } from '../lib/format';
 
 export default function WebhookCard() {
   const qc = useQueryClient();
@@ -83,6 +84,61 @@ export default function WebhookCard() {
           </button>
         </div>
       </div>
+
+      <DeliveryLog />
     </div>
   );
+}
+
+interface Delivery {
+  id: number;
+  url: string;
+  status: 'pending' | 'success' | 'failed';
+  attempts: number;
+  last_status_code: number | null;
+  last_error: string | null;
+  next_attempt_at: number | null;
+  created_at: number;
+  updated_at: number;
+}
+
+function DeliveryLog() {
+  const q = useQuery({
+    queryKey: ['webhook-deliveries'],
+    queryFn: () => api<{ deliveries: Delivery[] }>('/api/webhook/deliveries'),
+    refetchInterval: 5_000,
+  });
+  const list = q.data?.deliveries ?? [];
+  if (list.length === 0) return null;
+  return (
+    <div className="lh-card !rounded-md overflow-hidden">
+      <div className="px-3 py-2 lh-eyebrow border-b border-lh-line/50 flex items-center justify-between">
+        <span>Recent deliveries</span>
+        <span className="text-2xs text-lh-mute">auto-refreshing</span>
+      </div>
+      <div className="divide-y divide-lh-line/30">
+        {list.slice(0, 6).map((d) => (
+          <div key={d.id} className="px-3 py-2 flex items-center gap-2 text-2xs">
+            <StatusIcon status={d.status} />
+            <span className="text-lh-fore">
+              {d.status === 'pending'
+                ? `pending (attempt ${d.attempts + 1})`
+                : d.status === 'success'
+                  ? `success ${d.last_status_code ?? ''}`.trim()
+                  : `failed${d.last_status_code ? ` ${d.last_status_code}` : ''}`}
+            </span>
+            <span className="text-lh-mute ml-auto">{fmtRelative(d.updated_at)}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function StatusIcon({ status }: { status: Delivery['status'] }) {
+  if (status === 'success')
+    return <CheckCircle2 size={11} className="text-emerald-300 shrink-0" />;
+  if (status === 'failed')
+    return <AlertCircle size={11} className="text-rose-300 shrink-0" />;
+  return <Clock size={11} className="text-amber-300 shrink-0" />;
 }

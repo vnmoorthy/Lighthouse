@@ -103,7 +103,7 @@ export default function Layout() {
             </div>
             <div>
               <div className="text-[15px] font-semibold tracking-tightest leading-none">Lighthouse</div>
-              <div className="text-2xs text-lh-mute mt-0.5 tabular-nums">v0.42.0 · local</div>
+              <div className="text-2xs text-lh-mute mt-0.5 tabular-nums">v0.46.0 · local</div>
             </div>
           </div>
         </div>

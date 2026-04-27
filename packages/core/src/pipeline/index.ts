@@ -29,6 +29,8 @@ import {
 import { classifyEmail } from '../llm/extractors/classifier.js';
 import { extractReceipt } from '../llm/extractors/receipt.js';
 import { extractSubscription } from '../llm/extractors/subscription.js';
+import { extractPaystub } from '../llm/extractors/paystub.js';
+import { createIncome } from '../db/income.js';
 import { resolveMerchant } from '../domain/normalize.js';
 import { dedupeAndScoreSubscriptions } from '../domain/dedupe.js';
 import { runAlertsPass } from '../domain/alerts.js';
@@ -101,6 +103,34 @@ async function processOne(e: EmailRow, stats: PipelineStats): Promise<void> {
   if (cls === 'not_relevant' || cls === 'shipping_notification') {
     markEmailSkipped(e.id, cls);
     stats.skipped++;
+    return;
+  }
+
+  // Paystub branch — write to the income table.
+  if (cls === 'paystub') {
+    try {
+      const p = await withRetry(() => extractPaystub(e), `paystub(${e.id})`);
+      if (p.extraction.is_paystub && p.extraction.net_amount_cents > 0) {
+        createIncome({
+          source: p.extraction.source || 'Unknown payer',
+          amount_cents: p.extraction.net_amount_cents,
+          currency: (p.extraction.currency || 'USD').toUpperCase(),
+          received_at: ymdToMs(p.extraction.received_at),
+          recurring: p.extraction.cycle ? 1 : 0,
+          cycle: p.extraction.cycle ?? null,
+          note: p.extraction.notes ?? null,
+        });
+      } else {
+        markEmailSkipped(e.id, 'extractor returned is_paystub=false');
+        stats.skipped++;
+        return;
+      }
+    } catch (err) {
+      markEmailError(e.id, `paystub: ${(err as Error).message}`);
+      stats.errors++;
+      return;
+    }
+    markEmailDone(e.id);
     return;
   }
 

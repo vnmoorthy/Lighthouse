@@ -127,14 +127,29 @@ export function registerRoutes(app: FastifyInstance): void {
         total_cents: m.total_cents,
         count: m.count,
       })),
-      kpis: {
-        last_30d_cents: last30d_cents,
-        active_subscriptions: allActive.length,
-        trial_subscriptions: trial.length,
-        monthly_subscription_cost_cents: monthly_cost_cents,
-        annual_run_rate_cents,
-        open_alerts: openAlertsCount,
-      },
+      kpis: await (async () => {
+        const { getIncomeSummary } = await import('../db/income.js');
+        const income = getIncomeSummary();
+        const net30d = income.trailing_30d_cents - last30d_cents;
+        const savingsRate30d = income.trailing_30d_cents > 0
+          ? net30d / income.trailing_30d_cents
+          : null;
+        const subsAsPctOfIncome = income.monthly_recurring_cents > 0
+          ? monthly_cost_cents / income.monthly_recurring_cents
+          : null;
+        return {
+          last_30d_cents: last30d_cents,
+          active_subscriptions: allActive.length,
+          trial_subscriptions: trial.length,
+          monthly_subscription_cost_cents: monthly_cost_cents,
+          annual_run_rate_cents,
+          open_alerts: openAlertsCount,
+          income_30d_cents: income.trailing_30d_cents,
+          net_30d_cents: net30d,
+          savings_rate_30d: savingsRate30d,
+          subscriptions_as_pct_of_income: subsAsPctOfIncome,
+        };
+      })(),
       email_processing: counts,
       categories,
       year_over_year: yoy,
@@ -409,6 +424,15 @@ export function registerRoutes(app: FastifyInstance): void {
       }
     },
   );
+  app.get('/api/webhook/deliveries', async () => {
+    const { listWebhookDeliveries } = await import('../domain/webhooks.js');
+    return { deliveries: await listWebhookDeliveries(30) };
+  });
+  app.post('/api/webhook/queue', async () => {
+    const { runWebhookQueue } = await import('../domain/webhooks.js');
+    return runWebhookQueue();
+  });
+
   app.post('/api/webhook/test', async () => {
     const { dispatchWebhook } = await import('../domain/webhooks.js');
     dispatchWebhook({
