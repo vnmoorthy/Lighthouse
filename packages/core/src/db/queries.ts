@@ -237,6 +237,43 @@ export function setReceiptNote(id: number, note: string | null): void {
   getDb().prepare('UPDATE receipts SET user_note = ? WHERE id = ?').run(note, id);
 }
 
+export interface FullTextHit {
+  email_id: number;
+  receipt_id: number | null;
+  subject: string | null;
+  from_address: string;
+  internal_date: number;
+  snippet: string;
+}
+
+/**
+ * FTS5-backed search across emails. Returns up to `limit` hits, each
+ * with a Bing-style snippet around the match. We left-join receipts so
+ * the dashboard can deep-link to the receipt detail view if one exists.
+ */
+export function searchEmailsFullText(query: string, limit = 30): FullTextHit[] {
+  const q = query.trim();
+  if (!q) return [];
+  // Escape FTS5 special characters by quoting per term.
+  const safe = q
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((t) => '"' + t.replace(/"/g, '""') + '"')
+    .join(' ');
+  return getDb()
+    .prepare(
+      `SELECT e.id as email_id, r.id as receipt_id,
+              e.subject, e.from_address, e.internal_date,
+              snippet(emails_fts, 1, '<<', '>>', ' … ', 24) as snippet
+       FROM emails_fts
+       JOIN emails e ON e.id = emails_fts.rowid
+       LEFT JOIN receipts r ON r.email_id = e.id
+       WHERE emails_fts MATCH ?
+       ORDER BY rank LIMIT ?`,
+    )
+    .all(safe, limit) as FullTextHit[];
+}
+
 export function listReceipts(f: ReceiptListFilter = {}): {
   rows: (ReceiptRow & { merchant_display_name: string; merchant_domain: string | null })[];
   total: number;

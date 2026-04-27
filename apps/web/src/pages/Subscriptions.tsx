@@ -12,7 +12,7 @@ import PageHeader from '../components/PageHeader';
 import MerchantBadge from '../components/MerchantBadge';
 import EmailViewer from '../components/EmailViewer';
 import { fmtDate, fmtMoney } from '../lib/format';
-import { CheckCheck, X, ChevronRight, ExternalLink } from 'lucide-react';
+import { CheckCheck, X, ChevronRight, ExternalLink, Wand2 } from 'lucide-react';
 
 const STATUS_TABS: { key: 'all' | 'active' | 'trial' | 'cancelled'; label: string }[] = [
   { key: 'all', label: 'All' },
@@ -246,6 +246,8 @@ function SubscriptionDrawer({ id, onClose }: { id: number | null; onClose: () =>
                 </div>
               </div>
 
+              <Investigator id={q.data.id} />
+
               <div>
                 <div className="lh-eyebrow mb-2">Source email</div>
                 <EmailViewer emailId={q.data.last_seen_email_id} />
@@ -288,6 +290,56 @@ function SubscriptionDrawer({ id, onClose }: { id: number | null; onClose: () =>
           )}
         </div>
       </div>
+    </div>
+  );
+}
+
+function Investigator({ id }: { id: number }) {
+  const investigate = useMutation({
+    mutationFn: () => apiPost<{ markdown: string; confidence: number }>(`/api/subscriptions/${id}/investigate`),
+  });
+  return (
+    <div className="lh-card p-4">
+      <div className="flex items-center justify-between mb-2">
+        <div className="lh-eyebrow flex items-center gap-1.5">
+          <Wand2 size={11} className="text-lh-coral" /> Investigator
+        </div>
+        {!investigate.data ? (
+          <button
+            type="button"
+            className="lh-btn !py-1 !px-2 text-2xs"
+            onClick={() => investigate.mutate()}
+            disabled={investigate.isPending}
+          >
+            {investigate.isPending ? 'Thinking…' : 'Explain this charge'}
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="lh-btn-ghost text-2xs"
+            onClick={() => investigate.reset()}
+          >
+            Reset
+          </button>
+        )}
+      </div>
+      {investigate.data ? (
+        <div className="text-xs text-lh-fore/90 leading-relaxed whitespace-pre-wrap">
+          {investigate.data.markdown}
+          <div className="text-2xs text-lh-mute mt-2">
+            Confidence: {(investigate.data.confidence * 100).toFixed(0)}%
+          </div>
+        </div>
+      ) : investigate.isError ? (
+        <div className="text-2xs text-rose-300">
+          Failed: {(investigate.error as Error).message}
+        </div>
+      ) : (
+        <div className="text-2xs text-lh-mute">
+          Asks the LLM to read the relevant emails and explain where this
+          recurring charge came from.
+        </div>
+      )}
     </div>
   );
 }

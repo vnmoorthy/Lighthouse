@@ -34,6 +34,7 @@ import { dedupeAndScoreSubscriptions } from '../domain/dedupe.js';
 import { runAlertsPass } from '../domain/alerts.js';
 import { evaluateCustomRules } from '../domain/custom_alerts.js';
 import { evaluateBudgets } from '../domain/budgets.js';
+import { evaluateGoals } from '../domain/goals.js';
 import { log } from '../logger.js';
 import type {
   EmailRow,
@@ -294,10 +295,11 @@ export async function runPipeline(opts: { batchSize?: number } = {}): Promise<Pi
   return stats;
 }
 
-/** Convenience: run dedupe + alerts + custom rules + budgets as one post-step. */
+/** Convenience: run dedupe + alerts + custom rules + budgets + goals as one post-step. */
 export function runPostProcessing(): void {
   dedupeAndScoreSubscriptions();
   runAlertsPass();
   evaluateCustomRules();
   evaluateBudgets();
+  evaluateGoals();
 }

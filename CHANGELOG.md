@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.38.0 — investigator agent, goals, full-text search (April 2026)
+
+**v0.35 — Investigator agent**
+- New `llm/investigator.ts`: feeds the LLM a curated set of emails for a
+  subscription (first-seen + last-seen + signup/trial/price-change emails
+  matched by domain) and gets back a short markdown explanation: when did
+  this start, was it a free trial, has the price changed, evidence of
+  recent use.
+- `POST /api/subscriptions/:id/investigate` endpoint.
+- "Explain this charge" button in the Subscriptions drawer.
+
+**v0.36 — Spending goals**
+- New `goals` table + `0007_goals.sql` migration. Periods: weekly,
+  monthly, annual, custom (date-range).
+- `getGoalProgress()` computes used / cap / pct-of-window.
+- `evaluateGoals()` fires alerts at ≥80% via the post-sync pipeline.
+- `/api/goals` GET/POST/DELETE + new `GoalsList` widget in Settings.
+
+**v0.37 — Full-text email body search (FTS5)**
+- New `0008_fts.sql` migration: contentless `emails_fts` virtual table
+  + insert/update/delete triggers to keep it in sync with `emails`.
+- `searchEmailsFullText(q)` returns ranked hits with Bing-style snippets.
+- `GET /api/search?q=…` endpoint.
+- Command palette (⌘K) now searches inbox bodies when the query is ≥3
+  chars, surfaced as an "In your inbox" group with snippet previews.
+
 ## 0.34.0 — month compare, multi-currency, exports, notes (April 2026)
 
 **v0.30 — Side-by-side month compare**

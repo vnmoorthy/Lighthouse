@@ -25,6 +25,7 @@ import {
 import { useTheme, type Theme } from '../lib/theme';
 import CustomAlertsCard from '../components/CustomAlertsCard';
 import { BudgetsEdit } from '../components/BudgetsCard';
+import { GoalsList } from '../components/GoalsCard';
 import AccountsCard from '../components/AccountsCard';
 import WebhookCard from '../components/WebhookCard';
 import NotificationsToggle from '../components/NotificationsToggle';
@@ -155,6 +156,14 @@ export default function SettingsPage() {
               description="Set a monthly cap per category. We'll alert you when you cross 80%."
             >
               <BudgetsEdit />
+            </SectionCard>
+
+            {/* Goals */}
+            <SectionCard
+              title="Goals"
+              description="Long-horizon spending targets — weekly, monthly, annual. Alerts at 80% of cap, with a pace-marker line."
+            >
+              <GoalsList />
             </SectionCard>
 
             {/* Paper-receipt OCR */}

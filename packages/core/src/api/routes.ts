@@ -76,6 +76,16 @@ interface ReceiptListQuery {
 }
 
 export function registerRoutes(app: FastifyInstance): void {
+  // --- Full-text search ------------------------------------------------
+  app.get(
+    '/api/search',
+    async (req: FastifyRequest<{ Querystring: { q?: string; limit?: string } }>) => {
+      const { searchEmailsFullText } = await import('../db/queries.js');
+      const limit = req.query.limit ? Number.parseInt(req.query.limit, 10) : 30;
+      return { hits: searchEmailsFullText(req.query.q ?? '', limit) };
+    },
+  );
+
   // --- Health ----------------------------------------------------------
   app.get('/api/health', async () => ({
     ok: true,
@@ -452,6 +462,41 @@ export function registerRoutes(app: FastifyInstance): void {
 
   app.post('/api/custom-rules/evaluate', async () => evaluateCustomRules());
 
+  // --- Goals ----------------------------------------------------------
+  app.get('/api/goals', async () => {
+    const { getGoalProgress } = await import('../domain/goals.js');
+    return { goals: getGoalProgress() };
+  });
+  app.post(
+    '/api/goals',
+    async (
+      req: FastifyRequest<{
+        Body: {
+          name: string;
+          category: string | null;
+          cap_cents: number;
+          period: 'weekly' | 'monthly' | 'annual' | 'custom';
+          start_date?: number | null;
+          end_date?: number | null;
+        };
+      }>,
+      reply,
+    ) => {
+      const b = req.body ?? ({} as Record<string, unknown> as { name?: string });
+      if (!b.name) return reply.code(400).send({ error: 'invalid' });
+      const { createGoal } = await import('../domain/goals.js');
+      return createGoal(b as Parameters<typeof createGoal>[0]);
+    },
+  );
+  app.delete(
+    '/api/goals/:id',
+    async (req: FastifyRequest<{ Params: { id: string } }>) => {
+      const { deleteGoal } = await import('../domain/goals.js');
+      deleteGoal(Number.parseInt(req.params.id, 10));
+      return { ok: true };
+    },
+  );
+
   // --- Budgets --------------------------------------------------------
   app.get('/api/budgets', async () => ({ budgets: getBudgetProgress() }));
 
@@ -518,6 +563,20 @@ export function registerRoutes(app: FastifyInstance): void {
       if (!s) return reply.code(404).send({ error: 'not_found' });
       setSubscriptionStatus(id, 'cancelled');
       return { ok: true };
+    },
+  );
+
+  app.post(
+    '/api/subscriptions/:id/investigate',
+    async (req: FastifyRequest<{ Params: { id: string } }>, reply) => {
+      const id = Number.parseInt(req.params.id, 10);
+      const { investigateSubscription } = await import('../llm/investigator.js');
+      try {
+        const out = await investigateSubscription(id);
+        return out;
+      } catch (e) {
+        return reply.code(500).send({ error: 'investigate_failed', message: (e as Error).message });
+      }
     },
   );
 

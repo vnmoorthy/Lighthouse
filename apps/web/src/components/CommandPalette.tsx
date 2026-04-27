@@ -37,7 +37,8 @@ type Item =
   | { kind: 'category'; label: string; key: string; group: string }
   | { kind: 'merchant'; id: number; label: string; group: string }
   | { kind: 'subscription'; id: number; label: string; subtitle: string; group: string }
-  | { kind: 'receipt'; id: number; label: string; subtitle: string; group: string };
+  | { kind: 'receipt'; id: number; label: string; subtitle: string; group: string }
+  | { kind: 'fts'; email_id: number; receipt_id: number | null; label: string; subtitle: string; group: string };
 
 const PAGE_ITEMS: Extract<Item, { kind: 'page' }>[] = [
   { kind: 'page', label: 'Overview',      to: '/',              icon: LayoutDashboard, group: 'Navigate' },
@@ -118,6 +119,21 @@ export default function CommandPalette() {
       ),
     enabled: open && q.length >= 2,
   });
+  const fts = useQuery({
+    queryKey: ['palette-fts', q],
+    queryFn: () =>
+      api<{
+        hits: {
+          email_id: number;
+          receipt_id: number | null;
+          subject: string | null;
+          from_address: string;
+          internal_date: number;
+          snippet: string;
+        }[];
+      }>(`/api/search?q=${encodeURIComponent(q)}&limit=8`),
+    enabled: open && q.length >= 3,
+  });
 
   const items: Item[] = useMemo(() => {
     const cat: Item[] = Object.entries(CATEGORY_LABEL).map(([key, label]) => ({
@@ -146,8 +162,16 @@ export default function CommandPalette() {
       subtitle: `${fmtMoney(r.total_amount_cents, r.currency)} · ${new Date(r.transaction_date).toLocaleDateString()}`,
       group: 'Receipts',
     }));
-    return [...PAGE_ITEMS, ...cat, ...mer, ...sub, ...rec];
-  }, [merchants.data, subs.data, receipts.data]);
+    const ftsHits: Item[] = (fts.data?.hits ?? []).map((h) => ({
+      kind: 'fts' as const,
+      email_id: h.email_id,
+      receipt_id: h.receipt_id,
+      label: h.subject ?? '(no subject)',
+      subtitle: h.snippet.replace(/\s+/g, ' '),
+      group: 'In your inbox',
+    }));
+    return [...PAGE_ITEMS, ...cat, ...mer, ...sub, ...rec, ...ftsHits];
+  }, [merchants.data, subs.data, receipts.data, fts.data]);
 
   const filtered = useMemo(() => {
     if (!q) return items.filter((i) => i.kind === 'page' || i.kind === 'category').slice(0, 14);
@@ -177,6 +201,12 @@ export default function CommandPalette() {
     else if (i.kind === 'merchant') navigate(`/receipts?merchant=${i.id}`);
     else if (i.kind === 'subscription') navigate(`/subscriptions?status=all&open=${i.id}`);
     else if (i.kind === 'receipt') navigate(`/receipts?open=${i.id}`);
+    else if (i.kind === 'fts') {
+      // Prefer the receipt detail when one exists; otherwise jump to
+      // the receipts page filtered by the merchant of this email.
+      if (i.receipt_id) navigate(`/receipts?open=${i.receipt_id}`);
+      else navigate('/receipts');
+    }
   }
 
   function onKey(e: React.KeyboardEvent) {
@@ -263,7 +293,7 @@ function Row({ item, active, onClick }: { item: Item; active: boolean; onClick: 
       <Icon item={item} />
       <div className="flex-1 min-w-0">
         <div className="text-sm text-lh-fore truncate">{item.label}</div>
-        {(item.kind === 'subscription' || item.kind === 'receipt') && item.subtitle ? (
+        {(item.kind === 'subscription' || item.kind === 'receipt' || item.kind === 'fts') && item.subtitle ? (
           <div className="text-2xs text-lh-mute truncate">{item.subtitle}</div>
         ) : null}
       </div>
@@ -285,5 +315,6 @@ function Icon({ item }: { item: Item }) {
   }
   if (item.kind === 'subscription') return <Repeat size={14} className="text-lh-coral" strokeWidth={1.75} />;
   if (item.kind === 'receipt') return <Receipt size={14} className="text-lh-mute" strokeWidth={1.75} />;
+  if (item.kind === 'fts') return <Search size={14} className="text-lh-mute" strokeWidth={1.75} />;
   return null;
 }

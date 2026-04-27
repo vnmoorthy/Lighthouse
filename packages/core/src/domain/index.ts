@@ -11,3 +11,4 @@ export * from './budgets.js';
 export * from './webhooks.js';
 export * from './notifications.js';
 export * from './fx.js';
+export * from './goals.js';
