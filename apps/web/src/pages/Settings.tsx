@@ -26,6 +26,7 @@ import { useTheme, type Theme } from '../lib/theme';
 import CustomAlertsCard from '../components/CustomAlertsCard';
 import { BudgetsEdit } from '../components/BudgetsCard';
 import { GoalsList } from '../components/GoalsCard';
+import IncomeCard from '../components/IncomeCard';
 import AccountsCard from '../components/AccountsCard';
 import WebhookCard from '../components/WebhookCard';
 import NotificationsToggle from '../components/NotificationsToggle';
@@ -164,6 +165,14 @@ export default function SettingsPage() {
               description="Long-horizon spending targets — weekly, monthly, annual. Alerts at 80% of cap, with a pace-marker line."
             >
               <GoalsList />
+            </SectionCard>
+
+            {/* Income */}
+            <SectionCard
+              title="Income"
+              description="Paychecks and other money in. Currently manual; an LLM paystub extractor is on the roadmap."
+            >
+              <IncomeCard />
             </SectionCard>
 
             {/* Paper-receipt OCR */}

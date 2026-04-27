@@ -14,6 +14,7 @@ import { alertsCommand } from './commands/alerts.js';
 import { exportCommand } from './commands/export.js';
 import { importTakeoutCommand } from './commands/import_takeout.js';
 import { digestCommand } from './commands/digest.js';
+import { recategorizeCommand } from './commands/recategorize.js';
 
 const program = new Command();
 program
@@ -100,6 +101,18 @@ program
   .action(async (opts) => {
     try {
       await exportCommand(opts);
+    } catch (e) {
+      console.error(chalk.red(`✗ ${(e as Error).message}`));
+      process.exit(1);
+    }
+  });
+
+program
+  .command('recategorize')
+  .description('Re-run the LLM categorizer on merchants whose category is "other".')
+  .action(async () => {
+    try {
+      await recategorizeCommand();
     } catch (e) {
       console.error(chalk.red(`✗ ${(e as Error).message}`));
       process.exit(1);

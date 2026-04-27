@@ -295,6 +295,8 @@ export async function runPipeline(opts: { batchSize?: number } = {}): Promise<Pi
   return stats;
 }
 
+export * from './recategorize.js';
+
 /** Convenience: run dedupe + alerts + custom rules + budgets + goals as one post-step. */
 export function runPostProcessing(): void {
   dedupeAndScoreSubscriptions();

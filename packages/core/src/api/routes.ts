@@ -462,6 +462,52 @@ export function registerRoutes(app: FastifyInstance): void {
 
   app.post('/api/custom-rules/evaluate', async () => evaluateCustomRules());
 
+  // --- Income ---------------------------------------------------------
+  app.get('/api/income', async () => {
+    const { listIncome, getIncomeSummary } = await import('../db/income.js');
+    return { items: listIncome(200), summary: getIncomeSummary() };
+  });
+  app.post(
+    '/api/income',
+    async (
+      req: FastifyRequest<{
+        Body: {
+          source: string;
+          amount_cents: number;
+          currency?: string;
+          received_at?: number;
+          recurring?: boolean;
+          cycle?: 'weekly' | 'biweekly' | 'monthly' | 'quarterly' | 'annually' | null;
+          note?: string | null;
+        };
+      }>,
+      reply,
+    ) => {
+      const b = req.body ?? ({} as Record<string, unknown> as { source?: string; amount_cents?: number });
+      if (!b.source || !Number.isFinite(b.amount_cents) || (b.amount_cents ?? 0) <= 0) {
+        return reply.code(400).send({ error: 'invalid' });
+      }
+      const { createIncome } = await import('../db/income.js');
+      return createIncome({
+        source: b.source,
+        amount_cents: b.amount_cents,
+        currency: (b.currency ?? 'USD').toUpperCase(),
+        received_at: b.received_at ?? Date.now(),
+        recurring: b.recurring ? 1 : 0,
+        cycle: b.cycle ?? null,
+        note: b.note ?? null,
+      });
+    },
+  );
+  app.delete(
+    '/api/income/:id',
+    async (req: FastifyRequest<{ Params: { id: string } }>) => {
+      const { deleteIncome } = await import('../db/income.js');
+      deleteIncome(Number.parseInt(req.params.id, 10));
+      return { ok: true };
+    },
+  );
+
   // --- Goals ----------------------------------------------------------
   app.get('/api/goals', async () => {
     const { getGoalProgress } = await import('../domain/goals.js');
@@ -670,6 +716,71 @@ export function registerRoutes(app: FastifyInstance): void {
       if (!intoId || intoId === fromId) return reply.code(400).send({ error: 'invalid' });
       const { mergeMerchants } = await import('../db/queries.js');
       mergeMerchants(fromId, intoId);
+      return { ok: true };
+    },
+  );
+
+  // --- Receipt attachments --------------------------------------------
+  app.get(
+    '/api/receipts/:id/attachments',
+    async (req: FastifyRequest<{ Params: { id: string } }>) => {
+      const { listAttachmentsForReceipt } = await import('../db/attachments.js');
+      return { items: listAttachmentsForReceipt(Number.parseInt(req.params.id, 10)) };
+    },
+  );
+
+  app.post(
+    '/api/receipts/:id/attachments',
+    async (
+      req: FastifyRequest<{
+        Params: { id: string };
+        Body: {
+          kind: 'photo' | 'pdf' | 'email_html' | 'other';
+          filename?: string | null;
+          media_type?: string | null;
+          base64: string;
+        };
+      }>,
+      reply,
+    ) => {
+      const b = req.body;
+      if (!b?.base64 || !b?.kind) return reply.code(400).send({ error: 'invalid' });
+      try {
+        const { addAttachment } = await import('../db/attachments.js');
+        return addAttachment({
+          receipt_id: Number.parseInt(req.params.id, 10),
+          kind: b.kind,
+          filename: b.filename ?? null,
+          media_type: b.media_type ?? null,
+          bytes: Buffer.from(b.base64, 'base64'),
+        });
+      } catch (e) {
+        return reply.code(400).send({ error: 'rejected', message: (e as Error).message });
+      }
+    },
+  );
+
+  app.get(
+    '/api/attachments/:id',
+    async (req: FastifyRequest<{ Params: { id: string } }>, reply) => {
+      const { getAttachmentBytes } = await import('../db/attachments.js');
+      const a = getAttachmentBytes(Number.parseInt(req.params.id, 10));
+      if (!a) return reply.code(404).send({ error: 'not_found' });
+      return reply
+        .type(a.row.media_type || 'application/octet-stream')
+        .header(
+          'Content-Disposition',
+          `inline; filename="${a.row.filename ?? 'attachment'}"`,
+        )
+        .send(a.bytes);
+    },
+  );
+
+  app.delete(
+    '/api/attachments/:id',
+    async (req: FastifyRequest<{ Params: { id: string } }>) => {
+      const { deleteAttachment } = await import('../db/attachments.js');
+      deleteAttachment(Number.parseInt(req.params.id, 10));
       return { ok: true };
     },
   );

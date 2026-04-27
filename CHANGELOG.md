@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.42.0 — income, auto-recategorize, attachments (April 2026)
+
+**v0.39 — Income tracking**
+- New `income` table + `0009_income.sql`. Supports one-off and recurring
+  income with cycle (weekly/biweekly/monthly/quarterly/annual).
+- `db/income.ts`: `listIncome`, `createIncome`, `deleteIncome`, plus
+  `getIncomeSummary()` returning trailing 30/90/365-day totals and
+  monthly-recurring equivalent.
+- `/api/income` GET/POST/DELETE + new `IncomeCard` widget in Settings.
+
+**v0.40 — Auto-recategorize**
+- New `pipeline/recategorize.ts`: re-runs the LLM categorizer on every
+  merchant whose category is `'other'` or NULL, using merchant name +
+  domain + a sample receipt. Conservative — only writes when the model
+  reports ≥0.7 confidence and a non-other category.
+- New `lighthouse recategorize` CLI command.
+- Cheap (one short call per merchant, runs concurrently at LLM_CONCURRENCY).
+
+**v0.41 — Receipt attachments**
+- New `receipt_attachments` table + `0010_attachments.sql`.
+- BLOB-stored bytes with a 5 MB hard cap.
+- Endpoints: `GET /api/receipts/:id/attachments`, `POST` to upload,
+  `GET /api/attachments/:id` to fetch (correct `Content-Type` and
+  `Content-Disposition: inline` headers), `DELETE` to remove.
+
 ## 0.38.0 — investigator agent, goals, full-text search (April 2026)
 
 **v0.35 — Investigator agent**
