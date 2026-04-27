@@ -1,5 +1,31 @@
 # Changelog
 
+## 0.29.0 — year-end report, photo OCR, merchant management (April 2026)
+
+**v0.26 — Year-end summary**
+- New `getYearSummary(year)` query: totals, monthly bars, top 10 merchants,
+  category breakdown, biggest day/month, active subs at year end.
+- New `/year/:year` page (`YearSummaryPage`) with year-back/year-forward
+  navigation. Print-stylesheet aware: ⌘P → clean one-page PDF.
+
+**v0.27 — Receipt photo OCR**
+- New `extractReceiptFromImage()` using Anthropic vision input. Same
+  `ReceiptExtraction` shape as the email extractor.
+- New `pipeline/ingest_photo.ts` writes the image-derived receipt to a
+  synthetic email row (so the dashboard's "show me the proof" view still
+  works) plus a regular receipt row.
+- `POST /api/ingest/photo` accepts `{ image_base64, media_type }`.
+- Drag-and-drop `PhotoUpload` widget in Settings.
+
+**v0.28 — Bulk edit + merchant management**
+- New queries: `setMerchantCategory`, `setMerchantDisplayName`,
+  `mergeMerchants`, `bulkSetReceiptMerchant`.
+- New routes: `PATCH /api/merchants/:id`, `POST /api/merchants/:id/merge`,
+  `POST /api/receipts/bulk-merchant`.
+- New `/merchants` index page with edit + merge modals.
+- Receipts table gains a checkbox column + a `BulkBar` that appears when
+  any rows are selected, with a single "reassign to merchant" action.
+
 ## 0.25.0 — onboarding, money-flow, forwarded email, native notifications (April 2026)
 
 **v0.22 — Onboarding wizard + privacy report**

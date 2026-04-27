@@ -17,6 +17,7 @@ import {
   Menu,
   X,
   Eye,
+  Store,
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { api, type SummaryResponse } from '../lib/api';
@@ -33,6 +34,7 @@ const NAV_GROUPS: {
       { to: '/', icon: LayoutDashboard, label: 'Overview', end: true },
       { to: '/subscriptions', icon: Repeat, label: 'Subscriptions' },
       { to: '/receipts', icon: Receipt, label: 'Receipts' },
+      { to: '/merchants', icon: Store, label: 'Merchants' },
     ],
   },
   {
@@ -101,7 +103,7 @@ export default function Layout() {
             </div>
             <div>
               <div className="text-[15px] font-semibold tracking-tightest leading-none">Lighthouse</div>
-              <div className="text-2xs text-lh-mute mt-0.5 tabular-nums">v0.25.0 · local</div>
+              <div className="text-2xs text-lh-mute mt-0.5 tabular-nums">v0.29.0 · local</div>
             </div>
           </div>
         </div>

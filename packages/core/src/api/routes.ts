@@ -21,6 +21,7 @@ import {
   getReceiptById,
   getSpendingPatterns,
   getSubscriptionById,
+  getYearSummary,
   getMerchantTimeline,
   getSubscriptionHealth,
   getSyncRun,
@@ -252,6 +253,39 @@ export function registerRoutes(app: FastifyInstance): void {
   app.get('/api/insights', async () => ({ insights: getInsights(6) }));
 
   app.get('/api/patterns', async () => getSpendingPatterns());
+
+  app.get(
+    '/api/year/:year',
+    async (req: FastifyRequest<{ Params: { year: string } }>) => {
+      const y = Number.parseInt(req.params.year, 10);
+      return getYearSummary(y);
+    },
+  );
+
+  // --- Receipt photo OCR ----------------------------------------------
+  app.post(
+    '/api/ingest/photo',
+    async (
+      req: FastifyRequest<{
+        Body: {
+          image_base64: string;
+          media_type?: 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif';
+        };
+      }>,
+      reply,
+    ) => {
+      const body = req.body ?? ({} as { image_base64?: string; media_type?: 'image/jpeg' | 'image/png' | 'image/webp' | 'image/gif' });
+      if (!body.image_base64) return reply.code(400).send({ error: 'missing_image' });
+      try {
+        const { extractReceiptFromImage } = await import('../llm/extractors/receipt_photo.js');
+        const { ingestPhotoReceipt } = await import('../pipeline/ingest_photo.js');
+        const r = await extractReceiptFromImage(body.image_base64, body.media_type ?? 'image/jpeg');
+        return ingestPhotoReceipt(r);
+      } catch (e) {
+        return reply.code(500).send({ error: 'photo_ingest_failed', message: (e as Error).message });
+      }
+    },
+  );
 
   // --- Forwarded-email ingest -----------------------------------------
   // POST a raw email body (or just the plaintext) and the pipeline runs
@@ -518,6 +552,51 @@ export function registerRoutes(app: FastifyInstance): void {
       const t = getMerchantTimeline(id);
       if (!t) return reply.code(404).send({ error: 'not_found' });
       return t;
+    },
+  );
+
+  app.patch(
+    '/api/merchants/:id',
+    async (
+      req: FastifyRequest<{
+        Params: { id: string };
+        Body: { display_name?: string; category?: string | null };
+      }>,
+    ) => {
+      const id = Number.parseInt(req.params.id, 10);
+      const { setMerchantCategory, setMerchantDisplayName } = await import('../db/queries.js');
+      if (req.body?.display_name) setMerchantDisplayName(id, req.body.display_name);
+      if (req.body?.category !== undefined) setMerchantCategory(id, req.body.category);
+      return { ok: true };
+    },
+  );
+
+  app.post(
+    '/api/merchants/:id/merge',
+    async (
+      req: FastifyRequest<{ Params: { id: string }; Body: { into: number } }>,
+      reply,
+    ) => {
+      const fromId = Number.parseInt(req.params.id, 10);
+      const intoId = req.body?.into;
+      if (!intoId || intoId === fromId) return reply.code(400).send({ error: 'invalid' });
+      const { mergeMerchants } = await import('../db/queries.js');
+      mergeMerchants(fromId, intoId);
+      return { ok: true };
+    },
+  );
+
+  app.post(
+    '/api/receipts/bulk-merchant',
+    async (
+      req: FastifyRequest<{ Body: { receipt_ids: number[]; merchant_id: number } }>,
+    ) => {
+      const { bulkSetReceiptMerchant } = await import('../db/queries.js');
+      const updated = bulkSetReceiptMerchant(
+        req.body?.receipt_ids ?? [],
+        req.body?.merchant_id,
+      );
+      return { updated };
     },
   );
 

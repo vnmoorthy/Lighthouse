@@ -13,7 +13,9 @@ import EmailViewer from '../components/EmailViewer';
 import Modal from '../components/Modal';
 import { CATEGORY_LABEL } from '../components/CategoryBreakdown';
 import { fmtDate, fmtMoney } from '../lib/format';
-import { Search, ChevronRight, X, Printer } from 'lucide-react';
+import { Search, ChevronRight, X, Printer, Check } from 'lucide-react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { apiPost } from '../lib/api';
 
 export default function ReceiptsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -32,6 +34,8 @@ export default function ReceiptsPage() {
   const [limit] = useState(50);
   const [offset, setOffset] = useState(0);
   const [openId, setOpenId] = useState<number | null>(null);
+  const [selected, setSelected] = useState<Set<number>>(new Set());
+  const qc = useQueryClient();
 
   const merchants = useQuery({
     queryKey: ['merchants'],
@@ -137,6 +141,18 @@ export default function ReceiptsPage() {
             {total.toLocaleString()} total · {offset + 1}–{Math.min(offset + limit, total)}
           </span>
         </div>
+        {selected.size > 0 ? (
+          <BulkBar
+            selected={selected}
+            merchants={merchants.data?.merchants ?? []}
+            onClear={() => setSelected(new Set())}
+            onApplied={() => {
+              setSelected(new Set());
+              void qc.invalidateQueries({ queryKey: ['receipts'] });
+              void qc.invalidateQueries({ queryKey: ['summary'] });
+            }}
+          />
+        ) : null}
       </div>
 
       <div className="p-8">
@@ -144,7 +160,21 @@ export default function ReceiptsPage() {
           <table className="w-full">
             <thead className="lh-eyebrow border-b border-lh-line/60">
               <tr>
-                <th className="text-left px-5 py-3 font-medium">Date</th>
+                <th className="w-10 pl-5">
+                  <input
+                    type="checkbox"
+                    aria-label="Select all"
+                    className="accent-lh-coral"
+                    checked={selected.size > 0 && rows.every((r) => selected.has(r.id))}
+                    onChange={(e) => {
+                      const next = new Set(selected);
+                      if (e.target.checked) rows.forEach((r) => next.add(r.id));
+                      else rows.forEach((r) => next.delete(r.id));
+                      setSelected(next);
+                    }}
+                  />
+                </th>
+                <th className="text-left px-4 py-3 font-medium">Date</th>
                 <th className="text-left px-4 py-3 font-medium">Merchant</th>
                 <th className="text-left px-4 py-3 font-medium">Order #</th>
                 <th className="text-left px-4 py-3 font-medium">Payment</th>
@@ -177,10 +207,24 @@ export default function ReceiptsPage() {
                 rows.map((r) => (
                   <tr
                     key={r.id}
-                    className="border-b border-lh-line/30 hover:bg-lh-slab2/40 cursor-pointer transition-colors group"
+                    className={`border-b border-lh-line/30 cursor-pointer transition-colors group ${selected.has(r.id) ? 'bg-lh-coral/5' : 'hover:bg-lh-slab2/40'}`}
                     onClick={() => setOpenId(r.id)}
                   >
-                    <td className="px-5 py-3.5 text-lh-mute lh-num text-xs whitespace-nowrap">
+                    <td className="pl-5 w-10" onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        aria-label="Select"
+                        className="accent-lh-coral"
+                        checked={selected.has(r.id)}
+                        onChange={(e) => {
+                          const next = new Set(selected);
+                          if (e.target.checked) next.add(r.id);
+                          else next.delete(r.id);
+                          setSelected(next);
+                        }}
+                      />
+                    </td>
+                    <td className="px-4 py-3.5 text-lh-mute lh-num text-xs whitespace-nowrap">
                       {fmtDate(r.transaction_date)}
                     </td>
                     <td className="px-4 py-3.5">
@@ -241,6 +285,61 @@ export default function ReceiptsPage() {
       </div>
 
       <ReceiptModal id={openId} onClose={() => setOpenId(null)} />
+    </div>
+  );
+}
+
+function BulkBar({
+  selected,
+  merchants,
+  onClear,
+  onApplied,
+}: {
+  selected: Set<number>;
+  merchants: MerchantItem[];
+  onClear: () => void;
+  onApplied: () => void;
+}) {
+  const [target, setTarget] = useState('');
+  const apply = useMutation({
+    mutationFn: () =>
+      apiPost('/api/receipts/bulk-merchant', {
+        receipt_ids: [...selected],
+        merchant_id: Number.parseInt(target, 10),
+      }),
+    onSuccess: onApplied,
+  });
+  return (
+    <div className="mt-3 flex items-center gap-2 lh-card !rounded-md p-2 px-3">
+      <Check size={13} className="text-lh-coral" />
+      <span className="text-2xs text-lh-fore">
+        <span className="font-medium">{selected.size}</span> selected
+      </span>
+      <span className="text-lh-mute text-2xs">·</span>
+      <span className="text-2xs text-lh-mute">Reassign to:</span>
+      <select
+        className="lh-select !py-1 !text-xs"
+        value={target}
+        onChange={(e) => setTarget(e.target.value)}
+      >
+        <option value="">Pick a merchant…</option>
+        {merchants.map((m) => (
+          <option key={m.id} value={m.id}>
+            {m.display_name}
+          </option>
+        ))}
+      </select>
+      <button
+        type="button"
+        className="lh-btn-primary !py-1 !px-2 text-2xs"
+        disabled={!target || apply.isPending}
+        onClick={() => apply.mutate()}
+      >
+        Apply
+      </button>
+      <button type="button" className="lh-btn-ghost ml-auto text-2xs" onClick={onClear}>
+        Clear
+      </button>
     </div>
   );
 }

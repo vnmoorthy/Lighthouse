@@ -28,6 +28,7 @@ import { BudgetsEdit } from '../components/BudgetsCard';
 import AccountsCard from '../components/AccountsCard';
 import WebhookCard from '../components/WebhookCard';
 import NotificationsToggle from '../components/NotificationsToggle';
+import PhotoUpload from '../components/PhotoUpload';
 
 export default function SettingsPage() {
   const qc = useQueryClient();
@@ -145,6 +146,14 @@ export default function SettingsPage() {
               description="Set a monthly cap per category. We'll alert you when you cross 80%."
             >
               <BudgetsEdit />
+            </SectionCard>
+
+            {/* Paper-receipt OCR */}
+            <SectionCard
+              title="Paper receipts"
+              description="Snap a photo of a paper receipt; the vision LLM extracts the same fields as an emailed one. Cash purchases finally count."
+            >
+              <PhotoUpload />
             </SectionCard>
 
             {/* Notifications */}

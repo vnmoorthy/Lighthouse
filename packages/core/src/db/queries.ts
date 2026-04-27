@@ -142,6 +142,45 @@ export function listMerchants(): MerchantRow[] {
   return getDb().prepare('SELECT * FROM merchants ORDER BY display_name').all() as MerchantRow[];
 }
 
+export function setMerchantCategory(id: number, category: string | null): void {
+  getDb().prepare('UPDATE merchants SET category = ? WHERE id = ?').run(category, id);
+}
+
+export function setMerchantDisplayName(id: number, displayName: string): void {
+  getDb().prepare('UPDATE merchants SET display_name = ? WHERE id = ?').run(displayName, id);
+}
+
+/**
+ * Merge two merchants — repoint everything that referenced `fromId` to
+ * `toId`, then drop the source row. Useful for cleaning up
+ * "Amazon" / "amazon.com" / "AMZN Mktp" duplicates that the normalizer
+ * didn't catch.
+ */
+export function mergeMerchants(fromId: number, toId: number): void {
+  if (fromId === toId) return;
+  return tx(() => {
+    const db = getDb();
+    db.prepare('UPDATE receipts SET merchant_id = ? WHERE merchant_id = ?').run(toId, fromId);
+    db.prepare('UPDATE subscriptions SET merchant_id = ? WHERE merchant_id = ?').run(toId, fromId);
+    db.prepare('DELETE FROM merchant_alias_cache WHERE merchant_id = ?').run(fromId);
+    db.prepare('DELETE FROM merchants WHERE id = ?').run(fromId);
+  });
+}
+
+/** Bulk update receipts: set the merchant for many receipts in one shot. */
+export function bulkSetReceiptMerchant(receiptIds: number[], merchantId: number): number {
+  if (receiptIds.length === 0) return 0;
+  return tx(() => {
+    const stmt = getDb().prepare('UPDATE receipts SET merchant_id = ? WHERE id = ?');
+    let n = 0;
+    for (const id of receiptIds) {
+      const r = stmt.run(merchantId, id);
+      if (r.changes > 0) n++;
+    }
+    return n;
+  });
+}
+
 // --- Receipts --------------------------------------------------------------
 
 export function insertReceipt(r: Omit<ReceiptRow, 'id' | 'created_at'>): number {
@@ -823,6 +862,121 @@ export interface PatternByHour {
   hour: number; // 0..23
   total_cents: number;
   count: number;
+}
+
+export interface YearSummary {
+  year: number;
+  total_cents: number;
+  receipt_count: number;
+  monthly: { month: string; total_cents: number; count: number }[];
+  top_merchants: { merchant_id: number; display_name: string; total_cents: number; count: number }[];
+  categories: { category: string; total_cents: number; count: number }[];
+  biggest_day: { day: string; total_cents: number; count: number } | null;
+  biggest_month: { month: string; total_cents: number; count: number } | null;
+  active_subscriptions_at_year_end: number;
+  monthly_subscription_cost_cents: number;
+}
+
+/** Aggregated annual summary suitable for a "Year in review" page. */
+export function getYearSummary(year: number): YearSummary {
+  const start = Date.UTC(year, 0, 1);
+  const end = Date.UTC(year + 1, 0, 1);
+  const db = getDb();
+
+  const totals = db
+    .prepare(
+      `SELECT COALESCE(SUM(total_amount_cents), 0) as total, COUNT(*) as count
+       FROM receipts WHERE transaction_date >= ? AND transaction_date < ?`,
+    )
+    .get(start, end) as { total: number; count: number };
+
+  const monthly = db
+    .prepare(
+      `SELECT strftime('%Y-%m', transaction_date / 1000, 'unixepoch') as month,
+              SUM(total_amount_cents) as total_cents,
+              COUNT(*) as count
+       FROM receipts WHERE transaction_date >= ? AND transaction_date < ?
+       GROUP BY month ORDER BY month`,
+    )
+    .all(start, end) as { month: string; total_cents: number; count: number }[];
+
+  const topMerchants = db
+    .prepare(
+      `SELECT m.id as merchant_id, m.display_name,
+              SUM(r.total_amount_cents) as total_cents, COUNT(*) as count
+       FROM receipts r JOIN merchants m ON m.id = r.merchant_id
+       WHERE r.transaction_date >= ? AND r.transaction_date < ?
+       GROUP BY m.id ORDER BY total_cents DESC LIMIT 10`,
+    )
+    .all(start, end) as { merchant_id: number; display_name: string; total_cents: number; count: number }[];
+
+  const categories = db
+    .prepare(
+      `SELECT COALESCE(m.category, 'other') as category,
+              SUM(r.total_amount_cents) as total_cents, COUNT(*) as count
+       FROM receipts r JOIN merchants m ON m.id = r.merchant_id
+       WHERE r.transaction_date >= ? AND r.transaction_date < ?
+       GROUP BY category ORDER BY total_cents DESC`,
+    )
+    .all(start, end) as { category: string; total_cents: number; count: number }[];
+
+  const biggestDay = (db
+    .prepare(
+      `SELECT strftime('%Y-%m-%d', transaction_date / 1000, 'unixepoch') as day,
+              SUM(total_amount_cents) as total_cents,
+              COUNT(*) as count
+       FROM receipts WHERE transaction_date >= ? AND transaction_date < ?
+       GROUP BY day ORDER BY total_cents DESC LIMIT 1`,
+    )
+    .get(start, end) as { day: string; total_cents: number; count: number } | undefined) ?? null;
+
+  const biggestMonth =
+    monthly.length > 0
+      ? [...monthly].sort((a, b) => b.total_cents - a.total_cents)[0]!
+      : null;
+
+  // Active subscriptions at year end ≈ "still active when year closes":
+  // any subscription whose last charge falls in the last 60 days of the year.
+  const yearEnd = Math.min(end, Date.now());
+  const subs = db
+    .prepare(
+      `SELECT s.id, s.amount_cents, s.billing_cycle FROM subscriptions s
+       WHERE EXISTS (
+         SELECT 1 FROM subscription_charges c
+         WHERE c.subscription_id = s.id
+         AND c.charge_date >= ? AND c.charge_date < ?
+       )`,
+    )
+    .all(yearEnd - 60 * 24 * 60 * 60 * 1000, yearEnd) as {
+    id: number;
+    amount_cents: number;
+    billing_cycle: 'weekly' | 'monthly' | 'quarterly' | 'annually' | 'unknown';
+  }[];
+  const monthlyCost = subs.reduce((acc, s) => {
+    return (
+      acc +
+      (s.billing_cycle === 'weekly'
+        ? Math.round(s.amount_cents * (52 / 12))
+        : s.billing_cycle === 'quarterly'
+          ? Math.round(s.amount_cents / 3)
+          : s.billing_cycle === 'annually'
+            ? Math.round(s.amount_cents / 12)
+            : s.amount_cents)
+    );
+  }, 0);
+
+  return {
+    year,
+    total_cents: totals.total,
+    receipt_count: totals.count,
+    monthly,
+    top_merchants: topMerchants,
+    categories,
+    biggest_day: biggestDay,
+    biggest_month: biggestMonth ? { ...biggestMonth } : null,
+    active_subscriptions_at_year_end: subs.length,
+    monthly_subscription_cost_cents: monthlyCost,
+  };
 }
 
 /** Spending patterns by day-of-week and hour-of-day, last 365 days. */

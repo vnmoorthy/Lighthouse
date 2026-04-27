@@ -8,6 +8,8 @@ import ReceiptsPage from './pages/Receipts';
 import AlertsPage from './pages/Alerts';
 import SettingsPage from './pages/Settings';
 import MerchantPage from './pages/Merchant';
+import MerchantsPage from './pages/Merchants';
+import YearSummaryPage from './pages/YearSummary';
 import PrivacyPage from './pages/Privacy';
 import NotFoundPage from './pages/NotFound';
 
@@ -24,7 +26,9 @@ export default function App() {
           <Route path="/alerts" element={<AlertsPage />} />
           <Route path="/settings" element={<SettingsPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
+          <Route path="/merchants" element={<MerchantsPage />} />
           <Route path="/merchants/:id" element={<MerchantPage />} />
+          <Route path="/year/:year" element={<YearSummaryPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Route>
       </Routes>
